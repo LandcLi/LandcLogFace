@@ -75,6 +75,52 @@ func ExampleWithConfiguration() {
 	fmt.Println("带配置使用示例完成")
 }
 
+// ExampleWithFileRotation 日志文件轮转示例
+func ExampleWithFileRotation() {
+	// 使用zap日志库，配置文件轮转
+	zapLogger := NewZapLogger("app",
+		WithLevel(InfoLevel),
+		WithFormat("json"),
+		WithOutputPath("app.log"),
+		WithMaxLogSize(50),            // 单个日志文件最大50MB
+		WithMaxLogAge(7*24*time.Hour), // 日志文件保留7天
+		WithMaxLogFiles(5),            // 最多保留5个日志文件
+		WithCompressLogs(true),        // 压缩旧日志
+	)
+
+	zapLogger.Info("使用文件轮转的zap日志")
+
+	// 使用logrus日志库，配置文件轮转
+	logrusLogger := NewLogrusLogger("app",
+		WithLevel(InfoLevel),
+		WithFormat("text"),
+		WithOutputPath("app.log"),
+		WithMaxLogSize(100),            // 单个日志文件最大100MB
+		WithMaxLogAge(30*24*time.Hour), // 日志文件保留30天
+		WithMaxLogFiles(10),            // 最多保留10个日志文件
+		WithCompressLogs(false),        // 不压缩旧日志
+	)
+
+	logrusLogger.Info("使用文件轮转的logrus日志")
+
+	fmt.Println("日志文件轮转示例完成")
+}
+
+// ExampleWithMaxMessageSize 单条日志大小限制示例
+func ExampleWithMaxMessageSize() {
+	// 配置单条日志最大大小
+	logger := NewZapLogger("app",
+		WithLevel(InfoLevel),
+		WithFormat("json"),
+		WithOutputPath("stdout"),
+		WithMaxMessageSize(10), // 单条日志最大10KB
+	)
+
+	logger.Info("单条日志大小限制示例")
+
+	fmt.Println("单条日志大小限制示例完成")
+}
+
 // ExampleWithContext 使用上下文
 func ExampleWithContext() {
 	logger := GetLogger()
@@ -348,6 +394,12 @@ func RunAllExamples() {
 	fmt.Println()
 
 	ExampleWithConfiguration()
+	fmt.Println()
+
+	ExampleWithFileRotation()
+	fmt.Println()
+
+	ExampleWithMaxMessageSize()
 	fmt.Println()
 
 	ExampleWithContext()

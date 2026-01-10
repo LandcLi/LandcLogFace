@@ -127,10 +127,15 @@ type Option func(*LoggerOptions)
 
 // LoggerOptions 日志配置选项
 type LoggerOptions struct {
-	Level      LogLevel
-	Format     string
-	OutputPath string
-	Config     map[string]interface{}
+	Level          LogLevel
+	Format         string
+	OutputPath     string
+	MaxLogSize     int64         // 单个日志文件最大大小（MB）
+	MaxLogAge      time.Duration // 日志文件最大保留时间
+	MaxLogFiles    int           // 最大保留日志文件数量
+	CompressLogs   bool          // 是否压缩旧日志
+	MaxMessageSize int           // 单条日志最大大小（KB）
+	Config         map[string]interface{}
 }
 
 // WithLevel 设置日志级别
@@ -158,5 +163,40 @@ func WithOutputPath(path string) Option {
 func WithConfig(config map[string]interface{}) Option {
 	return func(opt *LoggerOptions) {
 		opt.Config = config
+	}
+}
+
+// WithMaxLogSize 设置单个日志文件最大大小（MB）
+func WithMaxLogSize(size int64) Option {
+	return func(opt *LoggerOptions) {
+		opt.MaxLogSize = size
+	}
+}
+
+// WithMaxLogAge 设置日志文件最大保留时间
+func WithMaxLogAge(age time.Duration) Option {
+	return func(opt *LoggerOptions) {
+		opt.MaxLogAge = age
+	}
+}
+
+// WithMaxLogFiles 设置最大保留日志文件数量
+func WithMaxLogFiles(files int) Option {
+	return func(opt *LoggerOptions) {
+		opt.MaxLogFiles = files
+	}
+}
+
+// WithCompressLogs 设置是否压缩旧日志
+func WithCompressLogs(compress bool) Option {
+	return func(opt *LoggerOptions) {
+		opt.CompressLogs = compress
+	}
+}
+
+// WithMaxMessageSize 设置单条日志最大大小（KB）
+func WithMaxMessageSize(size int) Option {
+	return func(opt *LoggerOptions) {
+		opt.MaxMessageSize = size
 	}
 }

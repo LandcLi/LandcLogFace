@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 // LogrusLogger logrus日志库适配器
@@ -20,10 +21,15 @@ type LogrusLogger struct {
 // NewLogrusLogger 创建logrus日志实例
 func NewLogrusLogger(name string, opts ...Option) *LogrusLogger {
 	options := &LoggerOptions{
-		Level:      InfoLevel,
-		Format:     "text",
-		OutputPath: "stdout",
-		Config:     make(map[string]interface{}),
+		Level:          InfoLevel,
+		Format:         "text",
+		OutputPath:     "stdout",
+		MaxLogSize:     100,                // 默认100MB
+		MaxLogAge:      7 * 24 * time.Hour, // 默认7天
+		MaxLogFiles:    10,                 // 默认10个文件
+		CompressLogs:   false,              // 默认不压缩
+		MaxMessageSize: 0,                  // 默认不限制
+		Config:         make(map[string]interface{}),
 	}
 
 	for _, opt := range opts {
@@ -65,10 +71,15 @@ func NewLogrusLogger(name string, opts ...Option) *LogrusLogger {
 
 	// 设置输出目标
 	if options.OutputPath != "stdout" {
-		file, err := os.OpenFile(options.OutputPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-		if err == nil {
-			logger.SetOutput(file)
+		// 使用lumberjack进行日志轮转
+		lumberjackLogger := &lumberjack.Logger{
+			Filename:   options.OutputPath,
+			MaxSize:    int(options.MaxLogSize),             // MB
+			MaxAge:     int(options.MaxLogAge.Hours() / 24), // 天
+			MaxBackups: options.MaxLogFiles,
+			Compress:   options.CompressLogs,
 		}
+		logger.SetOutput(lumberjackLogger)
 	}
 
 	return &LogrusLogger{

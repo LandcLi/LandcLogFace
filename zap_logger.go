@@ -7,6 +7,7 @@ import (
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 // ZapLogger zap日志库适配器
@@ -21,10 +22,15 @@ type ZapLogger struct {
 // NewZapLogger 创建zap日志实例
 func NewZapLogger(name string, opts ...Option) *ZapLogger {
 	options := &LoggerOptions{
-		Level:      InfoLevel,
-		Format:     "json",
-		OutputPath: "stdout",
-		Config:     make(map[string]interface{}),
+		Level:          InfoLevel,
+		Format:         "json",
+		OutputPath:     "stdout",
+		MaxLogSize:     100,                // 默认100MB
+		MaxLogAge:      7 * 24 * time.Hour, // 默认7天
+		MaxLogFiles:    10,                 // 默认10个文件
+		CompressLogs:   false,              // 默认不压缩
+		MaxMessageSize: 0,                  // 默认不限制
+		Config:         make(map[string]interface{}),
 	}
 
 	for _, opt := range opts {
@@ -48,42 +54,49 @@ func NewZapLogger(name string, opts ...Option) *ZapLogger {
 		zapLevel = zapcore.PanicLevel
 	}
 
-	// 配置输出
-	var outputPaths []string
-	if options.OutputPath == "stdout" {
-		outputPaths = []string{"stdout"}
-	} else {
-		outputPaths = []string{options.OutputPath}
+	// 配置编码器
+	encoderConfig := zapcore.EncoderConfig{
+		TimeKey:        "time",
+		LevelKey:       "level",
+		NameKey:        "logger",
+		CallerKey:      "caller",
+		MessageKey:     "msg",
+		StacktraceKey:  "stacktrace",
+		LineEnding:     zapcore.DefaultLineEnding,
+		EncodeLevel:    zapcore.LowercaseLevelEncoder,
+		EncodeTime:     zapcore.ISO8601TimeEncoder,
+		EncodeDuration: zapcore.SecondsDurationEncoder,
+		EncodeCaller:   zapcore.ShortCallerEncoder,
 	}
 
-	// 创建zap配置
-	zapConfig := zap.Config{
-		Level:       zap.NewAtomicLevelAt(zapLevel),
-		Development: false,
-		Encoding:    options.Format,
-		EncoderConfig: zapcore.EncoderConfig{
-			TimeKey:        "time",
-			LevelKey:       "level",
-			NameKey:        "logger",
-			CallerKey:      "caller",
-			MessageKey:     "msg",
-			StacktraceKey:  "stacktrace",
-			LineEnding:     zapcore.DefaultLineEnding,
-			EncodeLevel:    zapcore.LowercaseLevelEncoder,
-			EncodeTime:     zapcore.ISO8601TimeEncoder,
-			EncodeDuration: zapcore.SecondsDurationEncoder,
-			EncodeCaller:   zapcore.ShortCallerEncoder,
-		},
-		OutputPaths:      outputPaths,
-		ErrorOutputPaths: []string{"stderr"},
+	// 配置输出
+	var core zapcore.Core
+	if options.OutputPath == "stdout" {
+		// 输出到标准输出
+		core = zapcore.NewCore(
+			zapcore.NewJSONEncoder(encoderConfig),
+			zapcore.AddSync(os.Stdout),
+			zapLevel,
+		)
+	} else {
+		// 输出到文件，使用lumberjack进行轮转
+		lumberjackLogger := &lumberjack.Logger{
+			Filename:   options.OutputPath,
+			MaxSize:    int(options.MaxLogSize),             // MB
+			MaxAge:     int(options.MaxLogAge.Hours() / 24), // 天
+			MaxBackups: options.MaxLogFiles,
+			Compress:   options.CompressLogs,
+		}
+
+		core = zapcore.NewCore(
+			zapcore.NewJSONEncoder(encoderConfig),
+			zapcore.AddSync(lumberjackLogger),
+			zapLevel,
+		)
 	}
 
 	// 构建logger
-	logger, err := zapConfig.Build()
-	if err != nil {
-		// 如果构建失败，使用默认配置
-		logger, _ = zap.NewProduction()
-	}
+	logger := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
 
 	// 添加名称字段
 	logger = logger.Named(name)
@@ -318,7 +331,7 @@ func (p *ZapLoggerProvider) CreateWithConfig(name string, config map[string]inte
 		outputPath = "stdout"
 	}
 
-	return NewZapLogger(name, 
+	return NewZapLogger(name,
 		WithLevel(level),
 		WithFormat(format),
 		WithOutputPath(outputPath),

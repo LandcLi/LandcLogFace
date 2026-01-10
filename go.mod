@@ -5,6 +5,7 @@ go 1.24.0
 require (
 	github.com/sirupsen/logrus v1.9.3
 	go.uber.org/zap v1.26.0
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
 require (

@@ -6,24 +6,31 @@ import (
 	"log"
 	"os"
 	"time"
+
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 // StdLogger 标准库log适配器
 type StdLogger struct {
-	level    LogLevel
-	fields   []Field
-	ctx      context.Context
-	logger   *log.Logger
-	name     string
+	level  LogLevel
+	fields []Field
+	ctx    context.Context
+	logger *log.Logger
+	name   string
 }
 
 // NewStdLogger 创建标准库log实例
 func NewStdLogger(name string, opts ...Option) *StdLogger {
 	options := &LoggerOptions{
-		Level:      InfoLevel,
-		Format:     "text",
-		OutputPath: "stdout",
-		Config:     make(map[string]interface{}),
+		Level:          InfoLevel,
+		Format:         "text",
+		OutputPath:     "stdout",
+		MaxLogSize:     100,                // 默认100MB
+		MaxLogAge:      7 * 24 * time.Hour, // 默认7天
+		MaxLogFiles:    10,                 // 默认10个文件
+		CompressLogs:   false,              // 默认不压缩
+		MaxMessageSize: 0,                  // 默认不限制
+		Config:         make(map[string]interface{}),
 	}
 
 	for _, opt := range opts {
@@ -31,11 +38,19 @@ func NewStdLogger(name string, opts ...Option) *StdLogger {
 	}
 
 	// 配置输出
-	output := os.Stdout
-	if options.OutputPath != "stdout" {
-		file, err := os.OpenFile(options.OutputPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
-		if err == nil {
-			output = file
+	var output interface {
+		Write(p []byte) (n int, err error)
+	}
+	if options.OutputPath == "stdout" {
+		output = os.Stdout
+	} else {
+		// 使用lumberjack进行日志轮转
+		output = &lumberjack.Logger{
+			Filename:   options.OutputPath,
+			MaxSize:    int(options.MaxLogSize),             // MB
+			MaxAge:     int(options.MaxLogAge.Hours() / 24), // 天
+			MaxBackups: options.MaxLogFiles,
+			Compress:   options.CompressLogs,
 		}
 	}
 
@@ -270,7 +285,7 @@ func (p *StdLoggerProvider) CreateWithConfig(name string, config map[string]inte
 		outputPath = "stdout"
 	}
 
-	return NewStdLogger(name, 
+	return NewStdLogger(name,
 		WithLevel(level),
 		WithFormat(format),
 		WithOutputPath(outputPath),

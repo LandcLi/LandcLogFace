@@ -18,6 +18,10 @@ LandcLogFace是一个Go语言的日志门面（Logging Facade）项目，提供�
 - **错误处理**：支持添加错误信息
 - **时间管理**：支持自定义时间字段
 - **日志级别控制**：支持细粒度的日志级别控制
+- **日志文件轮转**：支持根据文件大小自动切分日志文件
+- **日志保留策略**：支持设置日志文件的最大保留时间和数量
+- **日志压缩**：支持压缩旧日志文件以节省空间
+- **单条日志大小限制**：支持限制单条日志的最大大小
 - **可扩展性**：支持自定义日志提供者
 
 ## 安装
@@ -300,7 +304,57 @@ func main() {
 }
 ```
 
-### 4. 自定义日志提供者
+### 4. 日志文件轮转配置
+
+LandcLogFace支持详细的日志文件轮转配置，包括文件大小限制、保留时间、文件数量等参数：
+
+#### 配置选项
+
+| 配置项 | 类型 | 默认值 | 描述 |
+|-------|------|-------|------|
+| `MaxLogSize` | `int64` | 100 | 单个日志文件最大大小（MB） |
+| `MaxLogAge` | `time.Duration` | 7*24*time.Hour | 日志文件最大保留时间 |
+| `MaxLogFiles` | `int` | 10 | 最大保留日志文件数量 |
+| `CompressLogs` | `bool` | false | 是否压缩旧日志 |
+| `MaxMessageSize` | `int` | 0 | 单条日志最大大小（KB），0表示不限制 |
+
+#### 使用示例
+
+```go
+package main
+
+import (
+	"LandcLogFace"
+	"time"
+)
+
+func main() {
+	// 配置文件轮转
+	logger := LandcLogFace.GetLogFactory().CreateLoggerWithProvider("app", "zap",
+		LandcLogFace.WithLevel(LandcLogFace.InfoLevel),
+		LandcLogFace.WithFormat("json"),
+		LandcLogFace.WithOutputPath("app.log"),
+		LandcLogFace.WithMaxLogSize(50),        // 单个日志文件最大50MB
+		LandcLogFace.WithMaxLogAge(7*24*time.Hour), // 日志文件保留7天
+		LandcLogFace.WithMaxLogFiles(5),        // 最多保留5个日志文件
+		LandcLogFace.WithCompressLogs(true),    // 压缩旧日志
+	)
+
+	logger.Info("使用文件轮转的zap日志")
+
+	// 配置单条日志大小限制
+	sizeLogger := LandcLogFace.GetLogFactory().CreateLoggerWithProvider("app", "logrus",
+		LandcLogFace.WithLevel(LandcLogFace.InfoLevel),
+		LandcLogFace.WithFormat("text"),
+		LandcLogFace.WithOutputPath("app.log"),
+		LandcLogFace.WithMaxMessageSize(10), // 单条日志最大10KB
+	)
+
+	sizeLogger.Info("限制单条日志大小的logrus日志")
+}
+```
+
+### 5. 自定义日志提供者
 
 如果你需要使用项目未内置的日志库，可以通过实现`LoggerProvider`接口来添加自定义日志提供者：
 
