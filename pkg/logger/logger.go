@@ -1,4 +1,4 @@
-package LandcLogFace
+package logger
 
 import (
 	"context"

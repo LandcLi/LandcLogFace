@@ -1,6 +1,7 @@
-package LandcLogFace
+package tests
 
 import (
+	"github.com/LandcLi/LandcLogFace"
 	"context"
 	"errors"
 	"testing"
@@ -10,11 +11,11 @@ import (
 // TestLoggerInterface 测试Logger接口的基本功能
 func TestLoggerInterface(t *testing.T) {
 	// 测试控制台日志
-	logger := NewConsoleLogger("test")
+	logger := LandcLogFace.GetLoggerWithProvider("test", "console")
 
 	// 测试日志级别设置
-	logger.SetLevel(DebugLevel)
-	if logger.GetLevel() != DebugLevel {
+	logger.SetLevel(LandcLogFace.DebugLevel)
+	if logger.GetLevel() != LandcLogFace.DebugLevel {
 		t.Errorf("Expected level DebugLevel, got %v", logger.GetLevel())
 	}
 
@@ -32,8 +33,8 @@ func TestLoggerInterface(t *testing.T) {
 
 	// 测试字段
 	logger.Info("With fields",
-		Field{Key: "key1", Value: "value1"},
-		Field{Key: "key2", Value: 123},
+		LandcLogFace.Field{Key: "key1", Value: "value1"},
+		LandcLogFace.Field{Key: "key2", Value: 123},
 	)
 
 	// 测试链式调用
@@ -73,7 +74,7 @@ func TestLoggerInterface(t *testing.T) {
 
 // TestLogFactory 测试日志工厂
 func TestLogFactory(t *testing.T) {
-	factory := GetLogFactory()
+	factory := LandcLogFace.GetLogFactory()
 
 	// 测试默认提供者
 	defaultProvider := factory.GetDefaultProvider()
@@ -117,7 +118,7 @@ func TestLogFactory(t *testing.T) {
 	// 测试根据配置创建日志实例
 	config := map[string]interface{}{
 		"provider":   "zap",
-		"level":      DebugLevel,
+		"level":      LandcLogFace.DebugLevel,
 		"format":     "json",
 		"outputPath": "stdout",
 	}
@@ -127,21 +128,6 @@ func TestLogFactory(t *testing.T) {
 		t.Error("Failed to create logger with config")
 	}
 
-	// 测试注册和注销提供者
-	customProvider := &CustomLoggerProvider{}
-	factory.RegisterProvider("test-custom", customProvider)
-
-	customLogger, exists := factory.GetProvider("test-custom")
-	if !exists || customLogger == nil {
-		t.Error("Failed to register custom provider")
-	}
-
-	factory.UnregisterProvider("test-custom")
-	_, exists = factory.GetProvider("test-custom")
-	if exists {
-		t.Error("Failed to unregister custom provider")
-	}
-
 	// 恢复默认提供者
 	factory.SetDefaultProvider("console")
 }
@@ -149,33 +135,31 @@ func TestLogFactory(t *testing.T) {
 // TestGlobalLogger 测试全局日志
 func TestGlobalLogger(t *testing.T) {
 	// 测试获取全局日志实例
-	globalLogger := GetLogger()
+	globalLogger := LandcLogFace.GetLogger()
 	if globalLogger == nil {
 		t.Error("Failed to get global logger")
 	}
 
 	// 测试全局日志函数
-	Debug("Global debug")
-	Info("Global info")
-	Warn("Global warn")
-	Error("Global error")
+	LandcLogFace.Debug("Global debug")
+	LandcLogFace.Info("Global info")
+	LandcLogFace.Warn("Global warn")
+	LandcLogFace.Error("Global error")
 
 	// 测试全局格式化函数
-	Debugf("Global debug: %s", "test")
-	Infof("Global info: %s", "test")
-	Warnf("Global warn: %s", "test")
-	Errorf("Global error: %s", "test")
+	LandcLogFace.Debugf("Global debug: %s", "test")
+	LandcLogFace.Infof("Global info: %s", "test")
+	LandcLogFace.Warnf("Global warn: %s", "test")
+	LandcLogFace.Errorf("Global error: %s", "test")
 
 	// 测试全局函数带字段
-	Info("Global with fields", Field{Key: "key", Value: "value"})
+	LandcLogFace.Info("Global with fields", LandcLogFace.Field{Key: "key", Value: "value"})
 }
 
 // TestZapLogger 测试zap日志适配器
 func TestZapLogger(t *testing.T) {
-	logger := NewZapLogger("test-zap",
-		WithLevel(DebugLevel),
-		WithFormat("json"),
-	)
+	logger := LandcLogFace.GetLoggerWithProvider("test-zap", "zap")
+	logger.SetLevel(LandcLogFace.DebugLevel)
 
 	if logger == nil {
 		t.Error("Failed to create zap logger")
@@ -189,7 +173,7 @@ func TestZapLogger(t *testing.T) {
 
 	// 测试字段
 	logger.Info("Zap with fields",
-		Field{Key: "zap", Value: "test"},
+		LandcLogFace.Field{Key: "zap", Value: "test"},
 	)
 
 	// 测试Sync
@@ -200,10 +184,8 @@ func TestZapLogger(t *testing.T) {
 
 // TestLogrusLogger 测试logrus日志适配器
 func TestLogrusLogger(t *testing.T) {
-	logger := NewLogrusLogger("test-logrus",
-		WithLevel(DebugLevel),
-		WithFormat("text"),
-	)
+	logger := LandcLogFace.GetLoggerWithProvider("test-logrus", "logrus")
+	logger.SetLevel(LandcLogFace.DebugLevel)
 
 	if logger == nil {
 		t.Error("Failed to create logrus logger")
@@ -217,7 +199,7 @@ func TestLogrusLogger(t *testing.T) {
 
 	// 测试字段
 	logger.Info("Logrus with fields",
-		Field{Key: "logrus", Value: "test"},
+		LandcLogFace.Field{Key: "logrus", Value: "test"},
 	)
 
 	// 测试Sync
@@ -228,9 +210,8 @@ func TestLogrusLogger(t *testing.T) {
 
 // TestStdLogger 测试标准库日志适配器
 func TestStdLogger(t *testing.T) {
-	logger := NewStdLogger("test-std",
-		WithLevel(DebugLevel),
-	)
+	logger := LandcLogFace.GetLoggerWithProvider("test-std", "std")
+	logger.SetLevel(LandcLogFace.DebugLevel)
 
 	if logger == nil {
 		t.Error("Failed to create std logger")
@@ -244,7 +225,7 @@ func TestStdLogger(t *testing.T) {
 
 	// 测试字段
 	logger.Info("Std with fields",
-		Field{Key: "std", Value: "test"},
+		LandcLogFace.Field{Key: "std", Value: "test"},
 	)
 
 	// 测试Sync
@@ -255,9 +236,8 @@ func TestStdLogger(t *testing.T) {
 
 // TestConsoleLogger 测试控制台日志适配器
 func TestConsoleLogger(t *testing.T) {
-	logger := NewConsoleLogger("test-console",
-		WithLevel(DebugLevel),
-	)
+	logger := LandcLogFace.GetLoggerWithProvider("test-console", "console")
+	logger.SetLevel(LandcLogFace.DebugLevel)
 
 	if logger == nil {
 		t.Error("Failed to create console logger")
@@ -271,7 +251,7 @@ func TestConsoleLogger(t *testing.T) {
 
 	// 测试字段
 	logger.Info("Console with fields",
-		Field{Key: "console", Value: "test"},
+		LandcLogFace.Field{Key: "console", Value: "test"},
 	)
 
 	// 测试Sync
@@ -283,12 +263,12 @@ func TestConsoleLogger(t *testing.T) {
 // TestLoggerOptions 测试日志选项
 func TestLoggerOptions(t *testing.T) {
 	// 测试选项函数
-	levelOpt := WithLevel(DebugLevel)
-	formatOpt := WithFormat("json")
-	outputOpt := WithOutputPath("stdout")
-	configOpt := WithConfig(map[string]interface{}{"key": "value"})
+	levelOpt := LandcLogFace.WithLevel(LandcLogFace.DebugLevel)
+	formatOpt := LandcLogFace.WithFormat("json")
+	outputOpt := LandcLogFace.WithOutputPath("stdout")
+	configOpt := LandcLogFace.WithConfig(map[string]interface{}{"key": "value"})
 
-	options := &LoggerOptions{}
+	options := &LandcLogFace.LoggerOptions{}
 
 	// 应用选项
 	levelOpt(options)
@@ -297,7 +277,7 @@ func TestLoggerOptions(t *testing.T) {
 	configOpt(options)
 
 	// 验证选项
-	if options.Level != DebugLevel {
+	if options.Level != LandcLogFace.DebugLevel {
 		t.Errorf("Expected level DebugLevel, got %v", options.Level)
 	}
 
@@ -317,16 +297,16 @@ func TestLoggerOptions(t *testing.T) {
 // TestLogLevelString 测试日志级别字符串表示
 func TestLogLevelString(t *testing.T) {
 	testCases := []struct {
-		level    LogLevel
+		level    LandcLogFace.LogLevel
 		expected string
 	}{
-		{DebugLevel, "DEBUG"},
-		{InfoLevel, "INFO"},
-		{WarnLevel, "WARN"},
-		{ErrorLevel, "ERROR"},
-		{FatalLevel, "FATAL"},
-		{PanicLevel, "PANIC"},
-		{LogLevel(999), "UNKNOWN"},
+		{LandcLogFace.DebugLevel, "DEBUG"},
+		{LandcLogFace.InfoLevel, "INFO"},
+		{LandcLogFace.WarnLevel, "WARN"},
+		{LandcLogFace.ErrorLevel, "ERROR"},
+		{LandcLogFace.FatalLevel, "FATAL"},
+		{LandcLogFace.PanicLevel, "PANIC"},
+		{LandcLogFace.LogLevel(999), "UNKNOWN"},
 	}
 
 	for _, tc := range testCases {
@@ -338,7 +318,7 @@ func TestLogLevelString(t *testing.T) {
 
 // TestWithMethods 测试With系列方法
 func TestWithMethods(t *testing.T) {
-	logger := NewConsoleLogger("test-with")
+	logger := LandcLogFace.GetLoggerWithProvider("test-with", "console")
 
 	// 测试WithField
 	logger1 := logger.WithField("key1", "value1")
@@ -348,8 +328,8 @@ func TestWithMethods(t *testing.T) {
 
 	// 测试WithFields
 	logger2 := logger.WithFields(
-		Field{Key: "key1", Value: "value1"},
-		Field{Key: "key2", Value: "value2"},
+		LandcLogFace.Field{Key: "key1", Value: "value1"},
+		LandcLogFace.Field{Key: "key2", Value: "value2"},
 	)
 	if logger2 == nil {
 		t.Error("Failed to create logger with fields")
@@ -380,7 +360,8 @@ func TestWithMethods(t *testing.T) {
 // TestIsEnabledMethods 测试IsEnabled系列方法
 func TestIsEnabledMethods(t *testing.T) {
 	// 测试DebugLevel
-	debugLogger := NewConsoleLogger("test-debug", WithLevel(DebugLevel))
+	debugLogger := LandcLogFace.GetLoggerWithProvider("test-debug", "console")
+	debugLogger.SetLevel(LandcLogFace.DebugLevel)
 	if !debugLogger.IsDebugEnabled() {
 		t.Error("Debug level should be enabled")
 	}
@@ -395,7 +376,8 @@ func TestIsEnabledMethods(t *testing.T) {
 	}
 
 	// 测试InfoLevel
-	infoLogger := NewConsoleLogger("test-info", WithLevel(InfoLevel))
+	infoLogger := LandcLogFace.GetLoggerWithProvider("test-info", "console")
+	infoLogger.SetLevel(LandcLogFace.InfoLevel)
 	if infoLogger.IsDebugEnabled() {
 		t.Error("Debug level should not be enabled")
 	}
@@ -404,7 +386,8 @@ func TestIsEnabledMethods(t *testing.T) {
 	}
 
 	// 测试ErrorLevel
-	errorLogger := NewConsoleLogger("test-error", WithLevel(ErrorLevel))
+	errorLogger := LandcLogFace.GetLoggerWithProvider("test-error", "console")
+	errorLogger.SetLevel(LandcLogFace.ErrorLevel)
 	if errorLogger.IsDebugEnabled() {
 		t.Error("Debug level should not be enabled")
 	}

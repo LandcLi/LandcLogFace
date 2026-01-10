@@ -1,4 +1,4 @@
-package LandcLogFace
+package logger
 
 import (
 	"sync"
@@ -6,14 +6,14 @@ import (
 
 // LogFactory 日志工厂
 type LogFactory struct {
-	providers map[string]LoggerProvider
+	providers       map[string]LoggerProvider
 	defaultProvider string
-	mu sync.RWMutex
+	mu              sync.RWMutex
 }
 
 // 全局日志工厂实例
 var (
-	factory *LogFactory
+	factory     *LogFactory
 	factoryOnce sync.Once
 )
 
@@ -35,7 +35,7 @@ func GetLogFactory() *LogFactory {
 // NewLogFactory 创建日志工厂实例
 func NewLogFactory() *LogFactory {
 	return &LogFactory{
-		providers: make(map[string]LoggerProvider),
+		providers:       make(map[string]LoggerProvider),
 		defaultProvider: "console",
 	}
 }
@@ -127,10 +127,51 @@ func (f *LogFactory) CreateLoggerWithConfig(name string, config map[string]inter
 	return provider.CreateWithConfig(name, config)
 }
 
+// CreateLoggerWithLogConfig 根据LogConfig创建日志实例
+func (f *LogFactory) CreateLoggerWithLogConfig(config *LogConfig) Logger {
+	// 验证配置
+	config.Validate()
+
+	// 获取提供者
+	f.mu.RLock()
+	provider, exists := f.providers[config.Provider]
+	f.mu.RUnlock()
+
+	if !exists {
+		// 如果指定的提供者不存在，使用默认提供者
+		f.mu.RLock()
+		provider, exists = f.providers[f.defaultProvider]
+		f.mu.RUnlock()
+		if !exists {
+			// 如果默认提供者也不存在，使用控制台日志
+			return NewConsoleLogger(config.Name)
+		}
+	}
+
+	// 创建配置map
+	configMap := make(map[string]interface{})
+	configMap["provider"] = config.Provider
+	configMap["level"] = config.Level
+	configMap["format"] = config.Format
+	configMap["outputPath"] = config.OutputPath
+	configMap["maxLogSize"] = config.MaxLogSize
+	configMap["maxLogAge"] = config.MaxLogAge
+	configMap["maxLogFiles"] = config.MaxLogFiles
+	configMap["compressLogs"] = config.CompressLogs
+	configMap["maxMessageSize"] = config.MaxMessageSize
+
+	// 添加额外配置
+	for k, v := range config.ExtraConfig {
+		configMap[k] = v
+	}
+
+	return provider.CreateWithConfig(config.Name, configMap)
+}
+
 // 全局日志实例
 var (
 	globalLogger Logger
-	loggerOnce sync.Once
+	loggerOnce   sync.Once
 )
 
 // GetLogger 获取全局日志实例
@@ -154,6 +195,11 @@ func GetLoggerWithProvider(name string, provider string) Logger {
 // GetLoggerWithConfig 根据配置获取日志实例
 func GetLoggerWithConfig(name string, config map[string]interface{}) Logger {
 	return GetLogFactory().CreateLoggerWithConfig(name, config)
+}
+
+// GetLoggerWithLogConfig 根据LogConfig获取日志实例
+func GetLoggerWithLogConfig(config *LogConfig) Logger {
+	return GetLogFactory().CreateLoggerWithLogConfig(config)
 }
 
 // SetGlobalLogger 设置全局日志实例
