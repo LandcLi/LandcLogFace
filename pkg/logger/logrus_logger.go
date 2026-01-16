@@ -2,6 +2,7 @@ package logger
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"time"
 
@@ -11,11 +12,12 @@ import (
 
 // LogrusLogger logrus日志库适配器
 type LogrusLogger struct {
-	logger *logrus.Logger
-	level  LogLevel
-	fields []Field
-	ctx    context.Context
-	name   string
+	logger         *logrus.Logger
+	level          LogLevel
+	fields         []Field
+	ctx            context.Context
+	name           string
+	maxMessageSize int // 单条日志最大大小（KB）
 }
 
 // NewLogrusLogger 创建logrus日志实例
@@ -83,11 +85,12 @@ func NewLogrusLogger(name string, opts ...Option) *LogrusLogger {
 	}
 
 	return &LogrusLogger{
-		logger: logger,
-		level:  options.Level,
-		fields: make([]Field, 0),
-		ctx:    context.Background(),
-		name:   name,
+		logger:         logger,
+		level:          options.Level,
+		fields:         make([]Field, 0),
+		ctx:            context.Background(),
+		name:           name,
+		maxMessageSize: options.MaxMessageSize,
 	}
 }
 
@@ -118,6 +121,17 @@ func (l *LogrusLogger) GetLevel() LogLevel {
 	return l.level
 }
 
+// limitMessageSize 限制日志消息大小
+func (l *LogrusLogger) limitMessageSize(msg string) string {
+	if l.maxMessageSize > 0 {
+		maxSize := l.maxMessageSize * 1024 // 转换为字节
+		if len(msg) > maxSize {
+			return msg[:maxSize-3] + "..."
+		}
+	}
+	return msg
+}
+
 // toLogrusFields 将自定义字段转换为logrus字段
 func (l *LogrusLogger) toLogrusFields(fields []Field) logrus.Fields {
 	logrusFields := make(logrus.Fields)
@@ -138,63 +152,67 @@ func (l *LogrusLogger) toLogrusFields(fields []Field) logrus.Fields {
 // Debug 输出调试级日志
 func (l *LogrusLogger) Debug(msg string, fields ...Field) {
 	if l.level <= DebugLevel {
-		l.logger.WithFields(l.toLogrusFields(fields)).Debug(msg)
+		l.logger.WithFields(l.toLogrusFields(fields)).Debug(l.limitMessageSize(msg))
 	}
 }
 
 // Debugf 输出格式化的调试级日志
 func (l *LogrusLogger) Debugf(format string, args ...interface{}) {
 	if l.level <= DebugLevel {
-		l.logger.Debugf(format, args...)
+		msg := fmt.Sprintf(format, args...)
+		l.logger.Debug(l.limitMessageSize(msg))
 	}
 }
 
 // Info 输出信息级日志
 func (l *LogrusLogger) Info(msg string, fields ...Field) {
 	if l.level <= InfoLevel {
-		l.logger.WithFields(l.toLogrusFields(fields)).Info(msg)
+		l.logger.WithFields(l.toLogrusFields(fields)).Info(l.limitMessageSize(msg))
 	}
 }
 
 // Infof 输出格式化的信息级日志
 func (l *LogrusLogger) Infof(format string, args ...interface{}) {
 	if l.level <= InfoLevel {
-		l.logger.Infof(format, args...)
+		msg := fmt.Sprintf(format, args...)
+		l.logger.Info(l.limitMessageSize(msg))
 	}
 }
 
 // Warn 输出警告级日志
 func (l *LogrusLogger) Warn(msg string, fields ...Field) {
 	if l.level <= WarnLevel {
-		l.logger.WithFields(l.toLogrusFields(fields)).Warn(msg)
+		l.logger.WithFields(l.toLogrusFields(fields)).Warn(l.limitMessageSize(msg))
 	}
 }
 
 // Warnf 输出格式化的警告级日志
 func (l *LogrusLogger) Warnf(format string, args ...interface{}) {
 	if l.level <= WarnLevel {
-		l.logger.Warnf(format, args...)
+		msg := fmt.Sprintf(format, args...)
+		l.logger.Warn(l.limitMessageSize(msg))
 	}
 }
 
 // Error 输出错误级日志
 func (l *LogrusLogger) Error(msg string, fields ...Field) {
 	if l.level <= ErrorLevel {
-		l.logger.WithFields(l.toLogrusFields(fields)).Error(msg)
+		l.logger.WithFields(l.toLogrusFields(fields)).Error(l.limitMessageSize(msg))
 	}
 }
 
 // Errorf 输出格式化的错误级日志
 func (l *LogrusLogger) Errorf(format string, args ...interface{}) {
 	if l.level <= ErrorLevel {
-		l.logger.Errorf(format, args...)
+		msg := fmt.Sprintf(format, args...)
+		l.logger.Error(l.limitMessageSize(msg))
 	}
 }
 
 // Fatal 输出致命级日志并退出程序
 func (l *LogrusLogger) Fatal(msg string, fields ...Field) {
 	if l.level <= FatalLevel {
-		l.logger.WithFields(l.toLogrusFields(fields)).Fatal(msg)
+		l.logger.WithFields(l.toLogrusFields(fields)).Fatal(l.limitMessageSize(msg))
 		os.Exit(1)
 	}
 }
@@ -202,7 +220,8 @@ func (l *LogrusLogger) Fatal(msg string, fields ...Field) {
 // Fatalf 输出格式化的致命级日志并退出程序
 func (l *LogrusLogger) Fatalf(format string, args ...interface{}) {
 	if l.level <= FatalLevel {
-		l.logger.Fatalf(format, args...)
+		msg := fmt.Sprintf(format, args...)
+		l.logger.Fatal(l.limitMessageSize(msg))
 		os.Exit(1)
 	}
 }
@@ -210,14 +229,15 @@ func (l *LogrusLogger) Fatalf(format string, args ...interface{}) {
 // Panic 输出恐慌级日志并触发panic
 func (l *LogrusLogger) Panic(msg string, fields ...Field) {
 	if l.level <= PanicLevel {
-		l.logger.WithFields(l.toLogrusFields(fields)).Panic(msg)
+		l.logger.WithFields(l.toLogrusFields(fields)).Panic(l.limitMessageSize(msg))
 	}
 }
 
 // Panicf 输出格式化的恐慌级日志并触发panic
 func (l *LogrusLogger) Panicf(format string, args ...interface{}) {
 	if l.level <= PanicLevel {
-		l.logger.Panicf(format, args...)
+		msg := fmt.Sprintf(format, args...)
+		l.logger.Panic(l.limitMessageSize(msg))
 	}
 }
 
@@ -322,10 +342,50 @@ func (p *LogrusLoggerProvider) CreateWithConfig(name string, config map[string]i
 		outputPath = "stdout"
 	}
 
+	var maxLogSize int64
+	if size, ok := config["maxLogSize"].(int64); ok {
+		maxLogSize = size
+	} else {
+		maxLogSize = 100
+	}
+
+	var maxLogAge time.Duration
+	if age, ok := config["maxLogAge"].(time.Duration); ok {
+		maxLogAge = age
+	} else {
+		maxLogAge = 7 * 24 * time.Hour
+	}
+
+	var maxLogFiles int
+	if files, ok := config["maxLogFiles"].(int); ok {
+		maxLogFiles = files
+	} else {
+		maxLogFiles = 10
+	}
+
+	var compressLogs bool
+	if compress, ok := config["compressLogs"].(bool); ok {
+		compressLogs = compress
+	} else {
+		compressLogs = false
+	}
+
+	var maxMessageSize int
+	if size, ok := config["maxMessageSize"].(int); ok {
+		maxMessageSize = size
+	} else {
+		maxMessageSize = 0
+	}
+
 	return NewLogrusLogger(name,
 		WithLevel(level),
 		WithFormat(format),
 		WithOutputPath(outputPath),
+		WithMaxLogSize(maxLogSize),
+		WithMaxLogAge(maxLogAge),
+		WithMaxLogFiles(maxLogFiles),
+		WithCompressLogs(compressLogs),
+		WithMaxMessageSize(maxMessageSize),
 		WithConfig(config),
 	)
 }

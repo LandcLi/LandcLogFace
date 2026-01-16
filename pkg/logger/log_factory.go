@@ -144,7 +144,7 @@ func (f *LogFactory) CreateLoggerWithLogConfig(config *LogConfig) Logger {
 		f.mu.RUnlock()
 		if !exists {
 			// 如果默认提供者也不存在，使用控制台日志
-			return NewConsoleLogger(config.Name)
+			return NewConsoleLogger(config.Name, config.ToOptions()...)
 		}
 	}
 

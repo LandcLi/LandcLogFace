@@ -2,6 +2,7 @@ package logger
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"time"
 
@@ -12,11 +13,12 @@ import (
 
 // ZapLogger zap日志库适配器
 type ZapLogger struct {
-	logger *zap.Logger
-	level  LogLevel
-	fields []Field
-	ctx    context.Context
-	name   string
+	logger         *zap.Logger
+	level          LogLevel
+	fields         []Field
+	ctx            context.Context
+	name           string
+	maxMessageSize int // 单条日志最大大小（KB）
 }
 
 // NewZapLogger 创建zap日志实例
@@ -102,11 +104,12 @@ func NewZapLogger(name string, opts ...Option) *ZapLogger {
 	logger = logger.Named(name)
 
 	return &ZapLogger{
-		logger: logger,
-		level:  options.Level,
-		fields: make([]Field, 0),
-		ctx:    context.Background(),
-		name:   name,
+		logger:         logger,
+		level:          options.Level,
+		fields:         make([]Field, 0),
+		ctx:            context.Background(),
+		name:           name,
+		maxMessageSize: options.MaxMessageSize,
 	}
 }
 
@@ -120,6 +123,17 @@ func (z *ZapLogger) SetLevel(level LogLevel) {
 // GetLevel 获取当前日志级别
 func (z *ZapLogger) GetLevel() LogLevel {
 	return z.level
+}
+
+// limitMessageSize 限制日志消息大小
+func (z *ZapLogger) limitMessageSize(msg string) string {
+	if z.maxMessageSize > 0 {
+		maxSize := z.maxMessageSize * 1024 // 转换为字节
+		if len(msg) > maxSize {
+			return msg[:maxSize-3] + "..."
+		}
+	}
+	return msg
 }
 
 // toZapFields 将自定义字段转换为zap字段
@@ -142,63 +156,67 @@ func (z *ZapLogger) toZapFields(fields []Field) []zap.Field {
 // Debug 输出调试级日志
 func (z *ZapLogger) Debug(msg string, fields ...Field) {
 	if z.level <= DebugLevel {
-		z.logger.Debug(msg, z.toZapFields(fields)...)
+		z.logger.Debug(z.limitMessageSize(msg), z.toZapFields(fields)...)
 	}
 }
 
 // Debugf 输出格式化的调试级日志
 func (z *ZapLogger) Debugf(format string, args ...interface{}) {
 	if z.level <= DebugLevel {
-		z.logger.Sugar().Debugf(format, args...)
+		msg := fmt.Sprintf(format, args...)
+		z.logger.Sugar().Debug(z.limitMessageSize(msg))
 	}
 }
 
 // Info 输出信息级日志
 func (z *ZapLogger) Info(msg string, fields ...Field) {
 	if z.level <= InfoLevel {
-		z.logger.Info(msg, z.toZapFields(fields)...)
+		z.logger.Info(z.limitMessageSize(msg), z.toZapFields(fields)...)
 	}
 }
 
 // Infof 输出格式化的信息级日志
 func (z *ZapLogger) Infof(format string, args ...interface{}) {
 	if z.level <= InfoLevel {
-		z.logger.Sugar().Infof(format, args...)
+		msg := fmt.Sprintf(format, args...)
+		z.logger.Sugar().Info(z.limitMessageSize(msg))
 	}
 }
 
 // Warn 输出警告级日志
 func (z *ZapLogger) Warn(msg string, fields ...Field) {
 	if z.level <= WarnLevel {
-		z.logger.Warn(msg, z.toZapFields(fields)...)
+		z.logger.Warn(z.limitMessageSize(msg), z.toZapFields(fields)...)
 	}
 }
 
 // Warnf 输出格式化的警告级日志
 func (z *ZapLogger) Warnf(format string, args ...interface{}) {
 	if z.level <= WarnLevel {
-		z.logger.Sugar().Warnf(format, args...)
+		msg := fmt.Sprintf(format, args...)
+		z.logger.Sugar().Warn(z.limitMessageSize(msg))
 	}
 }
 
 // Error 输出错误级日志
 func (z *ZapLogger) Error(msg string, fields ...Field) {
 	if z.level <= ErrorLevel {
-		z.logger.Error(msg, z.toZapFields(fields)...)
+		z.logger.Error(z.limitMessageSize(msg), z.toZapFields(fields)...)
 	}
 }
 
 // Errorf 输出格式化的错误级日志
 func (z *ZapLogger) Errorf(format string, args ...interface{}) {
 	if z.level <= ErrorLevel {
-		z.logger.Sugar().Errorf(format, args...)
+		msg := fmt.Sprintf(format, args...)
+		z.logger.Sugar().Error(z.limitMessageSize(msg))
 	}
 }
 
 // Fatal 输出致命级日志并退出程序
 func (z *ZapLogger) Fatal(msg string, fields ...Field) {
 	if z.level <= FatalLevel {
-		z.logger.Fatal(msg, z.toZapFields(fields)...)
+		z.logger.Fatal(z.limitMessageSize(msg), z.toZapFields(fields)...)
 		os.Exit(1)
 	}
 }
@@ -206,7 +224,8 @@ func (z *ZapLogger) Fatal(msg string, fields ...Field) {
 // Fatalf 输出格式化的致命级日志并退出程序
 func (z *ZapLogger) Fatalf(format string, args ...interface{}) {
 	if z.level <= FatalLevel {
-		z.logger.Sugar().Fatalf(format, args...)
+		msg := fmt.Sprintf(format, args...)
+		z.logger.Sugar().Fatal(z.limitMessageSize(msg))
 		os.Exit(1)
 	}
 }
@@ -214,14 +233,15 @@ func (z *ZapLogger) Fatalf(format string, args ...interface{}) {
 // Panic 输出恐慌级日志并触发panic
 func (z *ZapLogger) Panic(msg string, fields ...Field) {
 	if z.level <= PanicLevel {
-		z.logger.Panic(msg, z.toZapFields(fields)...)
+		z.logger.Panic(z.limitMessageSize(msg), z.toZapFields(fields)...)
 	}
 }
 
 // Panicf 输出格式化的恐慌级日志并触发panic
 func (z *ZapLogger) Panicf(format string, args ...interface{}) {
 	if z.level <= PanicLevel {
-		z.logger.Sugar().Panicf(format, args...)
+		msg := fmt.Sprintf(format, args...)
+		z.logger.Sugar().Panic(z.limitMessageSize(msg))
 	}
 }
 
@@ -331,10 +351,50 @@ func (p *ZapLoggerProvider) CreateWithConfig(name string, config map[string]inte
 		outputPath = "stdout"
 	}
 
+	var maxLogSize int64
+	if size, ok := config["maxLogSize"].(int64); ok {
+		maxLogSize = size
+	} else {
+		maxLogSize = 100
+	}
+
+	var maxLogAge time.Duration
+	if age, ok := config["maxLogAge"].(time.Duration); ok {
+		maxLogAge = age
+	} else {
+		maxLogAge = 7 * 24 * time.Hour
+	}
+
+	var maxLogFiles int
+	if files, ok := config["maxLogFiles"].(int); ok {
+		maxLogFiles = files
+	} else {
+		maxLogFiles = 10
+	}
+
+	var compressLogs bool
+	if compress, ok := config["compressLogs"].(bool); ok {
+		compressLogs = compress
+	} else {
+		compressLogs = false
+	}
+
+	var maxMessageSize int
+	if size, ok := config["maxMessageSize"].(int); ok {
+		maxMessageSize = size
+	} else {
+		maxMessageSize = 0
+	}
+
 	return NewZapLogger(name,
 		WithLevel(level),
 		WithFormat(format),
 		WithOutputPath(outputPath),
+		WithMaxLogSize(maxLogSize),
+		WithMaxLogAge(maxLogAge),
+		WithMaxLogFiles(maxLogFiles),
+		WithCompressLogs(compressLogs),
+		WithMaxMessageSize(maxMessageSize),
 		WithConfig(config),
 	)
 }

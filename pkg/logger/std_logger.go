@@ -2,6 +2,7 @@ package logger
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -12,11 +13,13 @@ import (
 
 // StdLogger 标准库log适配器
 type StdLogger struct {
-	level  LogLevel
-	fields []Field
-	ctx    context.Context
-	logger *log.Logger
-	name   string
+	level          LogLevel
+	fields         []Field
+	ctx            context.Context
+	logger         *log.Logger
+	name           string
+	format         string // 日志格式（text/json）
+	maxMessageSize int    // 单条日志最大大小（KB）
 }
 
 // NewStdLogger 创建标准库log实例
@@ -58,11 +61,13 @@ func NewStdLogger(name string, opts ...Option) *StdLogger {
 	logger := log.New(output, "", log.LstdFlags)
 
 	return &StdLogger{
-		level:  options.Level,
-		fields: make([]Field, 0),
-		ctx:    context.Background(),
-		logger: logger,
-		name:   name,
+		level:          options.Level,
+		fields:         make([]Field, 0),
+		ctx:            context.Background(),
+		logger:         logger,
+		name:           name,
+		format:         options.Format,
+		maxMessageSize: options.MaxMessageSize,
 	}
 }
 
@@ -76,16 +81,59 @@ func (s *StdLogger) GetLevel() LogLevel {
 	return s.level
 }
 
+// limitMessageSize 限制日志消息大小
+func (s *StdLogger) limitMessageSize(msg string) string {
+	if s.maxMessageSize > 0 {
+		maxSize := s.maxMessageSize * 1024 // 转换为字节
+		if len(msg) > maxSize {
+			return msg[:maxSize-3] + "..."
+		}
+	}
+	return msg
+}
+
 // formatMessage 格式化日志消息
 func (s *StdLogger) formatMessage(level LogLevel, msg string, fields []Field) string {
+	timestamp := time.Now().Format("2006-01-02 15:04:05.000")
 	allFields := append(s.fields, fields...)
 
-	fieldStr := ""
-	for _, field := range allFields {
-		fieldStr += fmt.Sprintf(" %s=%v", field.Key, field.Value)
-	}
+	if s.format == "json" {
+		// 构建JSON格式的日志
+		jsonFields := make(map[string]interface{})
+		jsonFields["time"] = timestamp
+		jsonFields["level"] = level.String()
+		jsonFields["logger"] = s.name
+		jsonFields["msg"] = msg
 
-	return fmt.Sprintf("[%s] [%s] %s%s", level.String(), s.name, msg, fieldStr)
+		// 添加所有字段
+		for _, field := range allFields {
+			jsonFields[field.Key] = field.Value
+		}
+
+		// 转换为JSON字符串
+		jsonBytes, err := json.Marshal(jsonFields)
+		if err != nil {
+			// 如果JSON转换失败，回退到文本格式
+			fieldStr := ""
+			for _, field := range allFields {
+				fieldStr += fmt.Sprintf(" %s=%v", field.Key, field.Value)
+			}
+			formattedMsg := fmt.Sprintf("[%s] [%s] %s%s", level.String(), s.name, msg, fieldStr)
+			return s.limitMessageSize(formattedMsg)
+		}
+
+		formattedMsg := string(jsonBytes)
+		return s.limitMessageSize(formattedMsg)
+	} else {
+		// 文本格式
+		fieldStr := ""
+		for _, field := range allFields {
+			fieldStr += fmt.Sprintf(" %s=%v", field.Key, field.Value)
+		}
+
+		formattedMsg := fmt.Sprintf("[%s] [%s] %s%s", level.String(), s.name, msg, fieldStr)
+		return s.limitMessageSize(formattedMsg)
+	}
 }
 
 // Debug 输出调试级日志
@@ -285,10 +333,50 @@ func (p *StdLoggerProvider) CreateWithConfig(name string, config map[string]inte
 		outputPath = "stdout"
 	}
 
+	var maxLogSize int64
+	if size, ok := config["maxLogSize"].(int64); ok {
+		maxLogSize = size
+	} else {
+		maxLogSize = 100
+	}
+
+	var maxLogAge time.Duration
+	if age, ok := config["maxLogAge"].(time.Duration); ok {
+		maxLogAge = age
+	} else {
+		maxLogAge = 7 * 24 * time.Hour
+	}
+
+	var maxLogFiles int
+	if files, ok := config["maxLogFiles"].(int); ok {
+		maxLogFiles = files
+	} else {
+		maxLogFiles = 10
+	}
+
+	var compressLogs bool
+	if compress, ok := config["compressLogs"].(bool); ok {
+		compressLogs = compress
+	} else {
+		compressLogs = false
+	}
+
+	var maxMessageSize int
+	if size, ok := config["maxMessageSize"].(int); ok {
+		maxMessageSize = size
+	} else {
+		maxMessageSize = 0
+	}
+
 	return NewStdLogger(name,
 		WithLevel(level),
 		WithFormat(format),
 		WithOutputPath(outputPath),
+		WithMaxLogSize(maxLogSize),
+		WithMaxLogAge(maxLogAge),
+		WithMaxLogFiles(maxLogFiles),
+		WithCompressLogs(compressLogs),
+		WithMaxMessageSize(maxMessageSize),
 		WithConfig(config),
 	)
 }

@@ -2,6 +2,7 @@ package logger
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -12,11 +13,13 @@ import (
 
 // ConsoleLogger 默认的控制台日志适配器
 type ConsoleLogger struct {
-	level  LogLevel
-	fields []Field
-	ctx    context.Context
-	logger *log.Logger
-	name   string
+	level          LogLevel
+	fields         []Field
+	ctx            context.Context
+	logger         *log.Logger
+	name           string
+	format         string // 日志格式（text/json）
+	maxMessageSize int    // 单条日志最大大小（KB）
 }
 
 // NewConsoleLogger 创建控制台日志实例
@@ -54,11 +57,13 @@ func NewConsoleLogger(name string, opts ...Option) *ConsoleLogger {
 	}
 
 	return &ConsoleLogger{
-		level:  options.Level,
-		fields: make([]Field, 0),
-		ctx:    context.Background(),
-		logger: log.New(output, "", 0),
-		name:   name,
+		level:          options.Level,
+		fields:         make([]Field, 0),
+		ctx:            context.Background(),
+		logger:         log.New(output, "", 0),
+		name:           name,
+		format:         options.Format,
+		maxMessageSize: options.MaxMessageSize,
 	}
 }
 
@@ -72,17 +77,59 @@ func (c *ConsoleLogger) GetLevel() LogLevel {
 	return c.level
 }
 
+// limitMessageSize 限制日志消息大小
+func (c *ConsoleLogger) limitMessageSize(msg string) string {
+	if c.maxMessageSize > 0 {
+		maxSize := c.maxMessageSize * 1024 // 转换为字节
+		if len(msg) > maxSize {
+			return msg[:maxSize-3] + "..."
+		}
+	}
+	return msg
+}
+
 // formatMessage 格式化日志消息
 func (c *ConsoleLogger) formatMessage(level LogLevel, msg string, fields []Field) string {
 	timestamp := time.Now().Format("2006-01-02 15:04:05.000")
 	allFields := append(c.fields, fields...)
 
-	fieldStr := ""
-	for _, field := range allFields {
-		fieldStr += fmt.Sprintf(" %s=%v", field.Key, field.Value)
-	}
+	if c.format == "json" {
+		// 构建JSON格式的日志
+		jsonFields := make(map[string]interface{})
+		jsonFields["time"] = timestamp
+		jsonFields["level"] = level.String()
+		jsonFields["logger"] = c.name
+		jsonFields["msg"] = msg
 
-	return fmt.Sprintf("%s [%s] [%s] %s%s", timestamp, level.String(), c.name, msg, fieldStr)
+		// 添加所有字段
+		for _, field := range allFields {
+			jsonFields[field.Key] = field.Value
+		}
+
+		// 转换为JSON字符串
+		jsonBytes, err := json.Marshal(jsonFields)
+		if err != nil {
+			// 如果JSON转换失败，回退到文本格式
+			fieldStr := ""
+			for _, field := range allFields {
+				fieldStr += fmt.Sprintf(" %s=%v", field.Key, field.Value)
+			}
+			formattedMsg := fmt.Sprintf("%s [%s] [%s] %s%s", timestamp, level.String(), c.name, msg, fieldStr)
+			return c.limitMessageSize(formattedMsg)
+		}
+
+		formattedMsg := string(jsonBytes)
+		return c.limitMessageSize(formattedMsg)
+	} else {
+		// 文本格式
+		fieldStr := ""
+		for _, field := range allFields {
+			fieldStr += fmt.Sprintf(" %s=%v", field.Key, field.Value)
+		}
+
+		formattedMsg := fmt.Sprintf("%s [%s] [%s] %s%s", timestamp, level.String(), c.name, msg, fieldStr)
+		return c.limitMessageSize(formattedMsg)
+	}
 }
 
 // Debug 输出调试级日志
@@ -281,10 +328,50 @@ func (p *ConsoleLoggerProvider) CreateWithConfig(name string, config map[string]
 		outputPath = "stdout"
 	}
 
+	var maxLogSize int64
+	if size, ok := config["maxLogSize"].(int64); ok {
+		maxLogSize = size
+	} else {
+		maxLogSize = 100
+	}
+
+	var maxLogAge time.Duration
+	if age, ok := config["maxLogAge"].(time.Duration); ok {
+		maxLogAge = age
+	} else {
+		maxLogAge = 7 * 24 * time.Hour
+	}
+
+	var maxLogFiles int
+	if files, ok := config["maxLogFiles"].(int); ok {
+		maxLogFiles = files
+	} else {
+		maxLogFiles = 10
+	}
+
+	var compressLogs bool
+	if compress, ok := config["compressLogs"].(bool); ok {
+		compressLogs = compress
+	} else {
+		compressLogs = false
+	}
+
+	var maxMessageSize int
+	if size, ok := config["maxMessageSize"].(int); ok {
+		maxMessageSize = size
+	} else {
+		maxMessageSize = 0
+	}
+
 	return NewConsoleLogger(name,
 		WithLevel(level),
 		WithFormat(format),
 		WithOutputPath(outputPath),
+		WithMaxLogSize(maxLogSize),
+		WithMaxLogAge(maxLogAge),
+		WithMaxLogFiles(maxLogFiles),
+		WithCompressLogs(compressLogs),
+		WithMaxMessageSize(maxMessageSize),
 		WithConfig(config),
 	)
 }
