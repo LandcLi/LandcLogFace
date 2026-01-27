@@ -116,19 +116,19 @@ import (
 
 func main() {
 	// 使用console提供者（默认）
-	consoleLogger := LandcLogFace.GetLogFactory().CreateLoggerWithProvider("app", "console")
+	consoleLogger := LandcLogFace.GetLoggerWithProvider("app", "console")
 	consoleLogger.Info("使用控制台日志")
 
 	// 使用zap提供者（高性能）
-	zapLogger := LandcLogFace.GetLogFactory().CreateLoggerWithProvider("app", "zap")
+	zapLogger := LandcLogFace.GetLoggerWithProvider("app", "zap")
 	zapLogger.Info("使用zap日志")
 
 	// 使用logrus提供者（功能丰富）
-	logrusLogger := LandcLogFace.GetLogFactory().CreateLoggerWithProvider("app", "logrus")
+	logrusLogger := LandcLogFace.GetLoggerWithProvider("app", "logrus")
 	logrusLogger.Info("使用logrus日志")
 
 	// 使用std提供者（轻量）
-	stdLogger := LandcLogFace.GetLogFactory().CreateLoggerWithProvider("app", "std")
+	stdLogger := LandcLogFace.GetLoggerWithProvider("app", "std")
 	stdLogger.Info("使用标准库日志")
 }
 ```
@@ -148,7 +148,7 @@ import (
 
 func main() {
 	// 使用选项函数配置
-	logger := LandcLogFace.GetLogFactory().CreateLoggerWithProvider("app", "zap",
+	logger := LandcLogFace.GetLoggerWithProvider("app", "zap",
 		LandcLogFace.WithLevel(LandcLogFace.DebugLevel),
 		LandcLogFace.WithFormat("json"),
 		LandcLogFace.WithOutputPath("stdout"),
@@ -176,7 +176,7 @@ func main() {
 		"outputPath":  "stdout",
 	}
 
-	logger := LandcLogFace.GetLogFactory().CreateLoggerWithConfig("app", config)
+	logger := LandcLogFace.GetLoggerWithMap("app", config)
 	logger.Info("带配置的日志")
 }
 ```
@@ -330,7 +330,7 @@ import (
 
 func main() {
 	// 配置文件轮转
-	logger := LandcLogFace.GetLogFactory().CreateLoggerWithProvider("app", "zap",
+	logger := LandcLogFace.GetLoggerWithProvider("app", "zap",
 		LandcLogFace.WithLevel(LandcLogFace.InfoLevel),
 		LandcLogFace.WithFormat("json"),
 		LandcLogFace.WithOutputPath("app.log"),
@@ -343,7 +343,7 @@ func main() {
 	logger.Info("使用文件轮转的zap日志")
 
 	// 配置单条日志大小限制
-	sizeLogger := LandcLogFace.GetLogFactory().CreateLoggerWithProvider("app", "logrus",
+	sizeLogger := LandcLogFace.GetLoggerWithProvider("app", "logrus",
 		LandcLogFace.WithLevel(LandcLogFace.InfoLevel),
 		LandcLogFace.WithFormat("text"),
 		LandcLogFace.WithOutputPath("app.log"),
@@ -526,7 +526,7 @@ func NewCustomLogger(name string) *CustomLogger {
 type CustomLoggerProvider struct{}
 
 // Create 创建日志实例
-func (p *CustomLoggerProvider) Create(name string) LandcLogFace.Logger {
+func (p *CustomLoggerProvider) Create(name string, opts ...LandcLogFace.Option) LandcLogFace.Logger {
 	return NewCustomLogger(name)
 }
 
@@ -537,14 +537,14 @@ func (p *CustomLoggerProvider) CreateWithConfig(name string, config map[string]i
 
 func main() {
 	// 注册自定义提供者
-	LandcLogFace.GetLogFactory().RegisterProvider("custom", &CustomLoggerProvider{})
+	LandcLogFace.RegisterProvider("custom", &CustomLoggerProvider{})
 
 	// 使用自定义提供者
-	customLogger := LandcLogFace.GetLogFactory().CreateLoggerWithProvider("app", "custom")
+	customLogger := LandcLogFace.GetLoggerWithProvider("app", "custom")
 	customLogger.Info("使用自定义日志提供者")
 
 	// 注销自定义提供者
-	LandcLogFace.GetLogFactory().UnregisterProvider("custom")
+	LandcLogFace.UnregisterProvider("custom")
 }
 ```
 
@@ -552,12 +552,12 @@ func main() {
 
 ```
 LandcLogFace/
-├── landclogface.go       # 主包入口文件
+├── landc_logface.go      # 主包入口文件
 ├── go.mod                # 项目依赖管理
 ├── go.sum                # 依赖版本锁定
 ├── README.md             # 项目文档
 ├── LICENSE               # 许可证文件
-├── pkg/                  # 核心代码目录
+├── internal/             # 核心代码目录
 │   ├── logger/           # 日志核心实现
 │   │   ├── logger.go         # 核心接口定义
 │   │   ├── config.go         # 统一配置类
@@ -573,7 +573,9 @@ LandcLogFace/
 ├── examples/             # 示例代码目录
 │   └── example.go        # 使用示例
 └── tests/                # 测试目录
-    └── logger_test.go    # 测试用例
+    ├── logger_test.go    # 测试用例
+    ├── options_test.go   # 选项函数测试
+    └── custom_provider_test.go # 自定义提供者测试
 ```
 
 ## 依赖管理

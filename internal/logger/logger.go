@@ -117,7 +117,7 @@ type Logger interface {
 // LoggerProvider 日志提供者接口
 type LoggerProvider interface {
 	// Create 创建日志实例
-	Create(name string) Logger
+	Create(name string, opts ...Option) Logger
 	// CreateWithConfig 根据配置创建日志实例
 	CreateWithConfig(name string, config map[string]interface{}) Logger
 }

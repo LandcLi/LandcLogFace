@@ -324,8 +324,8 @@ func NewZapLoggerProvider() *ZapLoggerProvider {
 }
 
 // Create 创建日志实例
-func (p *ZapLoggerProvider) Create(name string) Logger {
-	return NewZapLogger(name)
+func (p *ZapLoggerProvider) Create(name string, opts ...Option) Logger {
+	return NewZapLogger(name, opts...)
 }
 
 // CreateWithConfig 根据配置创建日志实例

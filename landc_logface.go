@@ -29,6 +29,9 @@ type LoggerOptions = logger.LoggerOptions
 // LogConfig 统一的日志配置类，包含所有日志提供者的配置项
 type LogConfig = logger.LogConfig
 
+// LoggerProvider 日志提供者接口
+type LoggerProvider = logger.LoggerProvider
+
 // 日志级别常量
 const (
 	// DebugLevel 调试级别日志
@@ -45,12 +48,6 @@ const (
 	PanicLevel LogLevel = logger.PanicLevel
 )
 
-// GetLogFactory 获取全局日志工厂实例
-// 日志工厂用于管理日志提供者和创建日志实例
-func GetLogFactory() *logger.LogFactory {
-	return logger.GetLogFactory()
-}
-
 // GetLogger 获取全局日志实例
 // 全局日志实例是一个默认的日志实例，可直接使用
 func GetLogger() Logger {
@@ -66,15 +63,16 @@ func GetLoggerWithName(name string) Logger {
 // GetLoggerWithProvider 获取指定提供者的日志实例
 // name: 日志实例名称
 // provider: 日志提供者名称，如 "console"、"zap"、"logrus"、"std"
-func GetLoggerWithProvider(name string, provider string) Logger {
-	return logger.GetLoggerWithProvider(name, provider)
+// opts: 日志配置选项
+func GetLoggerWithProvider(name string, provider string, opts ...Option) Logger {
+	return logger.GetLoggerWithProvider(name, provider, opts...)
 }
 
 // GetLoggerWithConfig 根据配置map获取日志实例
 // name: 日志实例名称
 // config: 配置map，包含各种配置项
-func GetLoggerWithConfig(name string, config map[string]interface{}) Logger {
-	return logger.GetLoggerWithConfig(name, config)
+func GetLoggerWithMap(name string, config map[string]interface{}) Logger {
+	return logger.GetLoggerWithMap(name, config)
 }
 
 // GetLoggerWithLogConfig 根据LogConfig获取日志实例
@@ -239,18 +237,6 @@ func Panicf(format string, args ...interface{}) {
 
 // 适配器函数
 
-// NewGinLogger 创建一个新的gin日志适配器
-// log: 日志实例
-func NewGinLogger(log Logger) *adapters.GinLogger {
-	return adapters.NewGinLogger(log)
-}
-
-// NewGFLogger 创建一个新的goframe日志适配器
-// log: 日志实例
-func NewGFLogger(log Logger) *adapters.GFLogger {
-	return adapters.NewGFLogger(log)
-}
-
 // UseWithGin 将日志适配器应用到gin引擎
 // r: gin引擎实例
 // log: 日志实例
@@ -262,4 +248,17 @@ func UseWithGin(r *gin.Engine, log Logger) {
 // log: 日志实例
 func UseWithGF(log Logger) *adapters.GFLogger {
 	return adapters.UseWithGF(log)
+}
+
+// RegisterProvider 注册日志提供者
+// name: 提供者名称
+// provider: 日志提供者实例
+func RegisterProvider(name string, provider LoggerProvider) {
+	logger.GetLogFactory().RegisterProvider(name, provider)
+}
+
+// UnregisterProvider 注销日志提供者
+// name: 提供者名称
+func UnregisterProvider(name string) {
+	logger.GetLogFactory().UnregisterProvider(name)
 }

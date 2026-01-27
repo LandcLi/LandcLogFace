@@ -82,7 +82,7 @@ func (f *LogFactory) CreateLogger(name string) Logger {
 }
 
 // CreateLoggerWithProvider 使用指定的提供者创建日志实例
-func (f *LogFactory) CreateLoggerWithProvider(name string, providerName string) Logger {
+func (f *LogFactory) CreateLoggerWithProvider(name string, providerName string, opts ...Option) Logger {
 	f.mu.RLock()
 	provider, exists := f.providers[providerName]
 	f.mu.RUnlock()
@@ -94,15 +94,15 @@ func (f *LogFactory) CreateLoggerWithProvider(name string, providerName string) 
 		f.mu.RUnlock()
 		if !exists {
 			// 如果默认提供者也不存在，使用控制台日志
-			return NewConsoleLogger(name)
+			return NewConsoleLogger(name, opts...)
 		}
 	}
 
-	return provider.Create(name)
+	return provider.Create(name, opts...)
 }
 
-// CreateLoggerWithConfig 根据配置创建日志实例
-func (f *LogFactory) CreateLoggerWithConfig(name string, config map[string]interface{}) Logger {
+// CreateLoggerWithMap 根据配置创建日志实例
+func (f *LogFactory) CreateLoggerWithMap(name string, config map[string]interface{}) Logger {
 	// 从配置中获取提供者名称
 	providerName := f.defaultProvider
 	if pn, ok := config["provider"].(string); ok {
@@ -188,13 +188,13 @@ func GetLoggerWithName(name string) Logger {
 }
 
 // GetLoggerWithProvider 获取指定提供者的日志实例
-func GetLoggerWithProvider(name string, provider string) Logger {
-	return GetLogFactory().CreateLoggerWithProvider(name, provider)
+func GetLoggerWithProvider(name string, provider string, opts ...Option) Logger {
+	return GetLogFactory().CreateLoggerWithProvider(name, provider, opts...)
 }
 
-// GetLoggerWithConfig 根据配置获取日志实例
-func GetLoggerWithConfig(name string, config map[string]interface{}) Logger {
-	return GetLogFactory().CreateLoggerWithConfig(name, config)
+// GetLoggerWithMap 根据配置获取日志实例
+func GetLoggerWithMap(name string, config map[string]interface{}) Logger {
+	return GetLogFactory().CreateLoggerWithMap(name, config)
 }
 
 // GetLoggerWithLogConfig 根据LogConfig获取日志实例

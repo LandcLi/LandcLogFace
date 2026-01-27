@@ -306,8 +306,8 @@ func NewStdLoggerProvider() *StdLoggerProvider {
 }
 
 // Create 创建日志实例
-func (p *StdLoggerProvider) Create(name string) Logger {
-	return NewStdLogger(name)
+func (p *StdLoggerProvider) Create(name string, opts ...Option) Logger {
+	return NewStdLogger(name, opts...)
 }
 
 // CreateWithConfig 根据配置创建日志实例

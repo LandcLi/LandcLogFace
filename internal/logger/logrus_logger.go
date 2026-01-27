@@ -315,8 +315,8 @@ func NewLogrusLoggerProvider() *LogrusLoggerProvider {
 }
 
 // Create 创建日志实例
-func (p *LogrusLoggerProvider) Create(name string) Logger {
-	return NewLogrusLogger(name)
+func (p *LogrusLoggerProvider) Create(name string, opts ...Option) Logger {
+	return NewLogrusLogger(name, opts...)
 }
 
 // CreateWithConfig 根据配置创建日志实例

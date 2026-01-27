@@ -1,11 +1,12 @@
 package tests
 
 import (
-	"github.com/LandcLi/LandcLogFace"
 	"context"
 	"errors"
 	"testing"
 	"time"
+
+	"github.com/LandcLi/LandcLogFace"
 )
 
 // TestLoggerInterface 测试Logger接口的基本功能
@@ -70,66 +71,6 @@ func TestLoggerInterface(t *testing.T) {
 	if err := logger.Sync(); err != nil {
 		t.Errorf("Sync failed: %v", err)
 	}
-}
-
-// TestLogFactory 测试日志工厂
-func TestLogFactory(t *testing.T) {
-	factory := LandcLogFace.GetLogFactory()
-
-	// 测试默认提供者
-	defaultProvider := factory.GetDefaultProvider()
-	if defaultProvider != "console" {
-		t.Errorf("Expected default provider to be 'console', got '%s'", defaultProvider)
-	}
-
-	// 测试设置默认提供者
-	factory.SetDefaultProvider("zap")
-	if factory.GetDefaultProvider() != "zap" {
-		t.Error("Failed to set default provider")
-	}
-
-	// 测试创建日志实例
-	logger := factory.CreateLogger("test")
-	if logger == nil {
-		t.Error("Failed to create logger")
-	}
-
-	// 测试使用指定提供者创建日志实例
-	zapLogger := factory.CreateLoggerWithProvider("test", "zap")
-	if zapLogger == nil {
-		t.Error("Failed to create zap logger")
-	}
-
-	logrusLogger := factory.CreateLoggerWithProvider("test", "logrus")
-	if logrusLogger == nil {
-		t.Error("Failed to create logrus logger")
-	}
-
-	stdLogger := factory.CreateLoggerWithProvider("test", "std")
-	if stdLogger == nil {
-		t.Error("Failed to create std logger")
-	}
-
-	consoleLogger := factory.CreateLoggerWithProvider("test", "console")
-	if consoleLogger == nil {
-		t.Error("Failed to create console logger")
-	}
-
-	// 测试根据配置创建日志实例
-	config := map[string]interface{}{
-		"provider":   "zap",
-		"level":      LandcLogFace.DebugLevel,
-		"format":     "json",
-		"outputPath": "stdout",
-	}
-
-	configLogger := factory.CreateLoggerWithConfig("test", config)
-	if configLogger == nil {
-		t.Error("Failed to create logger with config")
-	}
-
-	// 恢复默认提供者
-	factory.SetDefaultProvider("console")
 }
 
 // TestGlobalLogger 测试全局日志

@@ -1,11 +1,12 @@
 package examples
 
 import (
-	"github.com/LandcLi/LandcLogFace"
 	"context"
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/LandcLi/LandcLogFace"
 )
 
 // ExampleBasicUsage 基本使用示例
@@ -40,19 +41,19 @@ func ExampleBasicUsage() {
 // ExampleWithDifferentProviders 使用不同的日志提供者
 func ExampleWithDifferentProviders() {
 	// 使用console提供者
-	consoleLogger := LandcLogFace.GetLogFactory().CreateLoggerWithProvider("app", "console")
+	consoleLogger := LandcLogFace.GetLoggerWithProvider("app", "console")
 	consoleLogger.Info("使用控制台日志")
 
 	// 使用zap提供者
-	zapLogger := LandcLogFace.GetLogFactory().CreateLoggerWithProvider("app", "zap")
+	zapLogger := LandcLogFace.GetLoggerWithProvider("app", "zap")
 	zapLogger.Info("使用zap日志")
 
 	// 使用logrus提供者
-	logrusLogger := LandcLogFace.GetLogFactory().CreateLoggerWithProvider("app", "logrus")
+	logrusLogger := LandcLogFace.GetLoggerWithProvider("app", "logrus")
 	logrusLogger.Info("使用logrus日志")
 
 	// 使用std提供者
-	stdLogger := LandcLogFace.GetLogFactory().CreateLoggerWithProvider("app", "std")
+	stdLogger := LandcLogFace.GetLoggerWithProvider("app", "std")
 	stdLogger.Info("使用标准库日志")
 
 	fmt.Println("不同提供者使用示例完成")
@@ -69,7 +70,7 @@ func ExampleWithConfiguration() {
 	}
 
 	// 根据配置创建日志实例
-	logger := LandcLogFace.GetLogFactory().CreateLoggerWithConfig("app", config)
+	logger := LandcLogFace.GetLoggerWithMap("app", config)
 	logger.Debug("带配置的调试日志")
 	logger.Info("带配置的信息日志")
 
@@ -234,14 +235,14 @@ func ExampleCustomProvider() {
 	customProvider := &CustomLoggerProvider{}
 
 	// 注册自定义提供者
-	LandcLogFace.GetLogFactory().RegisterProvider("custom", customProvider)
+	LandcLogFace.RegisterProvider("custom", customProvider)
 
 	// 使用自定义提供者
-	customLogger := LandcLogFace.GetLogFactory().CreateLoggerWithProvider("app", "custom")
+	customLogger := LandcLogFace.GetLoggerWithProvider("app", "custom")
 	customLogger.Info("使用自定义日志提供者")
 
 	// 注销自定义提供者
-	LandcLogFace.GetLogFactory().UnregisterProvider("custom")
+	LandcLogFace.UnregisterProvider("custom")
 
 	fmt.Println("自定义提供者示例完成")
 }
@@ -390,7 +391,7 @@ func (c *CustomLogger) Sync() error {
 type CustomLoggerProvider struct{}
 
 // Create 创建日志实例
-func (p *CustomLoggerProvider) Create(name string) LandcLogFace.Logger {
+func (p *CustomLoggerProvider) Create(name string, opts ...LandcLogFace.Option) LandcLogFace.Logger {
 	return NewCustomLogger(name)
 }
 

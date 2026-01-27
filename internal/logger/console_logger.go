@@ -301,8 +301,8 @@ func NewConsoleLoggerProvider() *ConsoleLoggerProvider {
 }
 
 // Create 创建日志实例
-func (p *ConsoleLoggerProvider) Create(name string) Logger {
-	return NewConsoleLogger(name)
+func (p *ConsoleLoggerProvider) Create(name string, opts ...Option) Logger {
+	return NewConsoleLogger(name, opts...)
 }
 
 // CreateWithConfig 根据配置创建日志实例
