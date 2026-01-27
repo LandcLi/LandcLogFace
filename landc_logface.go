@@ -4,8 +4,8 @@ package LandcLogFace
 import (
 	"time"
 
-	"github.com/LandcLi/LandcLogFace/pkg/adapters"
-	"github.com/LandcLi/LandcLogFace/pkg/logger"
+	"github.com/LandcLi/LandcLogFace/internal/adapters"
+	"github.com/LandcLi/LandcLogFace/internal/logger"
 	"github.com/gin-gonic/gin"
 )
 

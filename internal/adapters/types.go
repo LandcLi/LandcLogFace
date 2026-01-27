@@ -1,7 +1,7 @@
 package adapters
 
 import (
-	"github.com/LandcLi/LandcLogFace/pkg/logger"
+	"github.com/LandcLi/LandcLogFace/internal/logger"
 )
 
 // Logger 是日志门面接口类型别名
