@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/LandcLi/LandcLogFace/internal/logger"
+	"github.com/LandcLi/LandcLogFace"
 )
 
 // CustomLogger 自定义日志实现
@@ -19,72 +19,72 @@ func NewCustomLogger(name string) *CustomLogger {
 }
 
 // Debug 输出调试级日志
-func (c *CustomLogger) Debug(msg string, fields ...logger.Field) {}
+func (c *CustomLogger) Debug(msg string, fields ...LandcLogFace.Field) {}
 
 // Debugf 输出格式化的调试级日志
 func (c *CustomLogger) Debugf(format string, args ...interface{}) {}
 
 // Info 输出信息级日志
-func (c *CustomLogger) Info(msg string, fields ...logger.Field) {}
+func (c *CustomLogger) Info(msg string, fields ...LandcLogFace.Field) {}
 
 // Infof 输出格式化的信息级日志
 func (c *CustomLogger) Infof(format string, args ...interface{}) {}
 
 // Warn 输出警告级日志
-func (c *CustomLogger) Warn(msg string, fields ...logger.Field) {}
+func (c *CustomLogger) Warn(msg string, fields ...LandcLogFace.Field) {}
 
 // Warnf 输出格式化的警告级日志
 func (c *CustomLogger) Warnf(format string, args ...interface{}) {}
 
 // Error 输出错误级日志
-func (c *CustomLogger) Error(msg string, fields ...logger.Field) {}
+func (c *CustomLogger) Error(msg string, fields ...LandcLogFace.Field) {}
 
 // Errorf 输出格式化的错误级日志
 func (c *CustomLogger) Errorf(format string, args ...interface{}) {}
 
 // Fatal 输出致命级日志并退出程序
-func (c *CustomLogger) Fatal(msg string, fields ...logger.Field) {}
+func (c *CustomLogger) Fatal(msg string, fields ...LandcLogFace.Field) {}
 
 // Fatalf 输出格式化的致命级日志并退出程序
 func (c *CustomLogger) Fatalf(format string, args ...interface{}) {}
 
 // Panic 输出恐慌级日志并触发panic
-func (c *CustomLogger) Panic(msg string, fields ...logger.Field) {}
+func (c *CustomLogger) Panic(msg string, fields ...LandcLogFace.Field) {}
 
 // Panicf 输出格式化的恐慌级日志并触发panic
 func (c *CustomLogger) Panicf(format string, args ...interface{}) {}
 
 // WithFields 添加字段到日志
-func (c *CustomLogger) WithFields(fields ...logger.Field) logger.Logger {
+func (c *CustomLogger) WithFields(fields ...LandcLogFace.Field) LandcLogFace.Logger {
 	return c
 }
 
 // WithField 添加单个字段到日志
-func (c *CustomLogger) WithField(key string, value interface{}) logger.Logger {
+func (c *CustomLogger) WithField(key string, value interface{}) LandcLogFace.Logger {
 	return c
 }
 
 // WithContext 添加上下文到日志
-func (c *CustomLogger) WithContext(ctx context.Context) logger.Logger {
+func (c *CustomLogger) WithContext(ctx context.Context) LandcLogFace.Logger {
 	return c
 }
 
 // WithError 添加错误信息到日志
-func (c *CustomLogger) WithError(err error) logger.Logger {
+func (c *CustomLogger) WithError(err error) LandcLogFace.Logger {
 	return c
 }
 
 // WithTime 添加时间到日志
-func (c *CustomLogger) WithTime(t time.Time) logger.Logger {
+func (c *CustomLogger) WithTime(t time.Time) LandcLogFace.Logger {
 	return c
 }
 
 // SetLevel 设置日志级别
-func (c *CustomLogger) SetLevel(level logger.LogLevel) {}
+func (c *CustomLogger) SetLevel(level LandcLogFace.LogLevel) {}
 
 // GetLevel 获取日志级别
-func (c *CustomLogger) GetLevel() logger.LogLevel {
-	return logger.InfoLevel
+func (c *CustomLogger) GetLevel() LandcLogFace.LogLevel {
+	return LandcLogFace.InfoLevel
 }
 
 // IsDebugEnabled 检查调试级别是否启用
@@ -126,21 +126,21 @@ func (c *CustomLogger) Sync() error {
 type CustomLoggerProvider struct{}
 
 // Create 创建日志实例
-func (p *CustomLoggerProvider) Create(name string, opts ...logger.Option) logger.Logger {
+func (p *CustomLoggerProvider) Create(name string, opts ...LandcLogFace.Option) LandcLogFace.Logger {
 	return NewCustomLogger(name)
 }
 
 // CreateWithConfig 根据配置创建日志实例
-func (p *CustomLoggerProvider) CreateWithConfig(name string, config map[string]interface{}) logger.Logger {
+func (p *CustomLoggerProvider) CreateWithConfig(name string, config map[string]interface{}) LandcLogFace.Logger {
 	return NewCustomLogger(name)
 }
 
 func TestCustomLoggerProvider(t *testing.T) {
 	// 注册自定义提供者
-	logger.GetLogFactory().RegisterProvider("custom", &CustomLoggerProvider{})
+	LandcLogFace.RegisterProvider("custom", &CustomLoggerProvider{})
 
 	// 使用自定义提供者
-	customLogger := logger.GetLogFactory().CreateLoggerWithProvider("app", "custom")
+	customLogger := LandcLogFace.GetLoggerWithProvider("app", "custom")
 	if customLogger == nil {
 		t.Fatal("自定义日志提供者创建失败")
 	}
@@ -148,5 +148,5 @@ func TestCustomLoggerProvider(t *testing.T) {
 	customLogger.Info("使用自定义日志提供者")
 
 	// 注销自定义提供者
-	logger.GetLogFactory().UnregisterProvider("custom")
+	LandcLogFace.UnregisterProvider("custom")
 }

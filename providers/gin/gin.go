@@ -1,21 +1,23 @@
-package adapters
+//go:build gin_provider
+
+package gin
 
 import (
 	"fmt"
 	"time"
 
-	"github.com/LandcLi/LandcLogFace/internal/logger"
-
 	"github.com/gin-gonic/gin"
+
+	"github.com/LandcLi/LandcLogFace/internal/logger"
 )
 
 // GinLogger 是gin框架的日志适配器
 type GinLogger struct {
-	log Logger
+	log logger.Logger
 }
 
 // NewGinLogger 创建一个新的gin日志适配器
-func NewGinLogger(log Logger) *GinLogger {
+func NewGinLogger(log logger.Logger) *GinLogger {
 	return &GinLogger{
 		log: log,
 	}
@@ -99,11 +101,8 @@ func (g *GinLogger) Recovery() gin.HandlerFunc {
 }
 
 // UseWithGin 将日志适配器应用到gin引擎
-func UseWithGin(r *gin.Engine, log interface{}) {
-	// 类型断言，确保log实现了必要的方法
-	if logger, ok := log.(Logger); ok {
-		ginLogger := NewGinLogger(logger)
-		r.Use(ginLogger.Logger())
-		r.Use(ginLogger.Recovery())
-	}
+func UseWithGin(r *gin.Engine, log logger.Logger) {
+	ginLogger := NewGinLogger(log)
+	r.Use(ginLogger.Logger())
+	r.Use(ginLogger.Recovery())
 }

@@ -4,9 +4,7 @@ package LandcLogFace
 import (
 	"time"
 
-	"github.com/LandcLi/LandcLogFace/internal/adapters"
 	"github.com/LandcLi/LandcLogFace/internal/logger"
-	"github.com/gin-gonic/gin"
 )
 
 // 核心类型和函数导出
@@ -233,21 +231,6 @@ func Panic(msg string, fields ...Field) {
 // args: 格式化参数
 func Panicf(format string, args ...interface{}) {
 	logger.Panicf(format, args...)
-}
-
-// 适配器函数
-
-// UseWithGin 将日志适配器应用到gin引擎
-// r: gin引擎实例
-// log: 日志实例
-func UseWithGin(r *gin.Engine, log Logger) {
-	adapters.UseWithGin(r, log)
-}
-
-// UseWithGF 将日志适配器应用到goframe
-// log: 日志实例
-func UseWithGF(log Logger) *adapters.GFLogger {
-	return adapters.UseWithGF(log)
 }
 
 // RegisterProvider 注册日志提供者

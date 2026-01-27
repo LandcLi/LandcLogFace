@@ -3,52 +3,36 @@ package tests
 import (
 	"testing"
 
-	"github.com/LandcLi/LandcLogFace/internal/logger"
+	"github.com/LandcLi/LandcLogFace"
 )
 
 func TestCreateLoggerWithOptions(t *testing.T) {
 	tests := []struct {
 		name     string
 		provider string
-		opts     []logger.Option
+		opts     []LandcLogFace.Option
 	}{
-		{
-			name:     "zap with options",
-			provider: "zap",
-			opts: []logger.Option{
-				logger.WithLevel(logger.DebugLevel),
-				logger.WithFormat("json"),
-			},
-		},
-		{
-			name:     "logrus with options",
-			provider: "logrus",
-			opts: []logger.Option{
-				logger.WithLevel(logger.InfoLevel),
-				logger.WithFormat("text"),
-			},
-		},
 		{
 			name:     "console with options",
 			provider: "console",
-			opts: []logger.Option{
-				logger.WithLevel(logger.WarnLevel),
-				logger.WithFormat("json"),
+			opts: []LandcLogFace.Option{
+				LandcLogFace.WithLevel(LandcLogFace.WarnLevel),
+				LandcLogFace.WithFormat("json"),
 			},
 		},
 		{
 			name:     "std with options",
 			provider: "std",
-			opts: []logger.Option{
-				logger.WithLevel(logger.ErrorLevel),
-				logger.WithFormat("text"),
+			opts: []LandcLogFace.Option{
+				LandcLogFace.WithLevel(LandcLogFace.ErrorLevel),
+				LandcLogFace.WithFormat("text"),
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			log := logger.GetLogFactory().CreateLoggerWithProvider("test", tt.provider, tt.opts...)
+			log := LandcLogFace.GetLoggerWithProvider("test", tt.provider, tt.opts...)
 			if log == nil {
 				t.Fatalf("创建日志实例失败")
 			}
@@ -59,10 +43,10 @@ func TestCreateLoggerWithOptions(t *testing.T) {
 }
 
 func TestGetLoggerWithProviderWithOptions(t *testing.T) {
-	log := logger.GetLoggerWithProvider("test-app", "zap",
-		logger.WithLevel(logger.DebugLevel),
-		logger.WithFormat("json"),
-		logger.WithOutputPath("stdout"),
+	log := LandcLogFace.GetLoggerWithProvider("test-app", "console",
+		LandcLogFace.WithLevel(LandcLogFace.DebugLevel),
+		LandcLogFace.WithFormat("json"),
+		LandcLogFace.WithOutputPath("stdout"),
 	)
 
 	if log == nil {

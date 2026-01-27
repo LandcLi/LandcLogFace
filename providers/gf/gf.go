@@ -1,17 +1,21 @@
-package adapters
+//go:build gf_provider
+
+package gf
 
 import (
 	"context"
 	"fmt"
+
+	"github.com/LandcLi/LandcLogFace/internal/logger"
 )
 
 // GFLogger 是goframe框架的日志适配器
 type GFLogger struct {
-	log Logger
+	log logger.Logger
 }
 
 // NewGFLogger 创建一个新的goframe日志适配器
-func NewGFLogger(log Logger) *GFLogger {
+func NewGFLogger(log logger.Logger) *GFLogger {
 	return &GFLogger{
 		log: log,
 	}
@@ -125,15 +129,15 @@ func (g *GFLogger) Criticalln(ctx context.Context, v ...interface{}) {
 // GetLevel 实现glog.ILogger接口的GetLevel方法
 func (g *GFLogger) GetLevel() int {
 	switch g.log.GetLevel() {
-	case DebugLevel:
+	case logger.DebugLevel:
 		return 0 // glog.LEVEL_DEBUG
-	case InfoLevel:
+	case logger.InfoLevel:
 		return 1 // glog.LEVEL_INFO
-	case WarnLevel:
+	case logger.WarnLevel:
 		return 2 // glog.LEVEL_WARNING
-	case ErrorLevel:
+	case logger.ErrorLevel:
 		return 3 // glog.LEVEL_ERROR
-	case FatalLevel, PanicLevel:
+	case logger.FatalLevel, logger.PanicLevel:
 		return 4 // glog.LEVEL_CRITICAL
 	default:
 		return 1 // glog.LEVEL_INFO
@@ -144,17 +148,17 @@ func (g *GFLogger) GetLevel() int {
 func (g *GFLogger) SetLevel(level int) {
 	switch level {
 	case 0: // glog.LEVEL_DEBUG
-		g.log.SetLevel(DebugLevel)
+		g.log.SetLevel(logger.DebugLevel)
 	case 1, 2: // glog.LEVEL_INFO, glog.LEVEL_NOTICE
-		g.log.SetLevel(InfoLevel)
+		g.log.SetLevel(logger.InfoLevel)
 	case 3: // glog.LEVEL_WARNING
-		g.log.SetLevel(WarnLevel)
+		g.log.SetLevel(logger.WarnLevel)
 	case 4: // glog.LEVEL_ERROR
-		g.log.SetLevel(ErrorLevel)
+		g.log.SetLevel(logger.ErrorLevel)
 	case 5: // glog.LEVEL_CRITICAL
-		g.log.SetLevel(FatalLevel)
+		g.log.SetLevel(logger.FatalLevel)
 	default:
-		g.log.SetLevel(InfoLevel)
+		g.log.SetLevel(logger.InfoLevel)
 	}
 }
 
@@ -226,12 +230,4 @@ func (g *GFLogger) Flush(ctx context.Context) error {
 // Close 实现glog.ILogger接口的Close方法
 func (g *GFLogger) Close(ctx context.Context) error {
 	return g.log.Sync()
-}
-
-// UseWithGF 将日志适配器应用到goframe
-func UseWithGF(log Logger) *GFLogger {
-	gfLogger := NewGFLogger(log)
-	// 这里可以设置goframe的全局日志器
-	// glog.SetLogger(gfLogger)
-	return gfLogger
 }

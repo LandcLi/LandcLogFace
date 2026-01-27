@@ -5,11 +5,13 @@ LandcLogFace是一个Go语言的日志门面（Logging Facade）项目，提供�
 ## 项目特性
 
 - **统一的日志接口**：定义标准的Logger接口，包含各种日志级别和功能
+- **按需导入**：使用Build Tags实现依赖分离，只引入需要的日志库
 - **多日志库支持**：实现多种常用日志库的适配器
-  - 控制台日志（默认）
+  - 控制台日志（默认，无第三方依赖）
   - zap日志库（高性能）
   - logrus日志库（功能丰富）
-  - 标准库log（轻量）
+  - 标准库log（轻量，无第三方依赖）
+- **框架适配器**：支持Gin和GoFrame框架的日志集成
 - **灵活的配置管理**：支持通过选项函数和配置map进行灵活配置
 - **日志工厂**：提供统一的日志实例创建和管理功能
 - **全局日志**：提供便捷的全局日志函数
@@ -48,14 +50,12 @@ go mod tidy
 
 ## 快速开始
 
-### 基本使用
+### 最小化使用（无第三方依赖）
 
 ```go
 package main
 
-import (
-	"github.com/LandcLi/LandcLogFace"
-)
+import "github.com/LandcLi/LandcLogFace"
 
 func main() {
 	// 获取全局日志实例
@@ -84,9 +84,7 @@ func main() {
 ```go
 package main
 
-import (
-	"github.com/LandcLi/LandcLogFace"
-)
+import "github.com/LandcLi/LandcLogFace"
 
 func main() {
 	// 使用全局函数输出日志
@@ -98,6 +96,95 @@ func main() {
 	// 使用全局格式化函数
 	LandcLogFace.Infof("全局格式化日志: %s", "test")
 	LandcLogFace.Errorf("全局错误格式化日志: %d", 500)
+}
+```
+
+## 按需导入日志库
+
+LandcLogFace 使用 Go 的 Build Tags 特性实现依赖分离，让你可以按需导入日志库，避免不必要的依赖。
+
+### 核心包（无第三方依赖）
+
+核心包不包含任何第三方日志库依赖，只提供基础的日志接口和功能：
+
+```go
+import "github.com/LandcLi/LandcLogFace"
+```
+
+核心包包含：
+- 基础日志接口定义
+- 控制台日志实现（默认）
+- 标准库日志实现
+- 日志工厂和配置管理
+- 全局日志函数
+
+### 使用 Zap 日志库
+
+如果你只想使用 Zap 日志库，只需要导入 Zap 提供者包：
+
+```go
+import (
+    "github.com/LandcLi/LandcLogFace"
+    _ "github.com/LandcLi/LandcLogFace/providers/zap" // 导入并注册 Zap 提供者
+)
+
+func main() {
+    // Zap 提供者已自动注册，可以直接使用
+    logger := LandcLogFace.GetLoggerWithProvider("app", "zap",
+        LandcLogFace.WithLevel(LandcLogFace.InfoLevel),
+        LandcLogFace.WithFormat("json"),
+    )
+    logger.Info("使用 Zap 日志")
+}
+```
+
+**依赖**：只会引入 `go.uber.org/zap` 和 `gopkg.in/natefinch/lumberjack.v2`
+
+### 使用 Logrus 日志库
+
+如果你只想使用 Logrus 日志库，只需要导入 Logrus 提供者包：
+
+```go
+import (
+    "github.com/LandcLi/LandcLogFace"
+    _ "github.com/LandcLi/LandcLogFace/providers/logrus" // 导入并注册 Logrus 提供者
+)
+
+func main() {
+    // Logrus 提供者已自动注册，可以直接使用
+    logger := LandcLogFace.GetLoggerWithProvider("app", "logrus",
+        LandcLogFace.WithLevel(LandcLogFace.InfoLevel),
+        LandcLogFace.WithFormat("text"),
+    )
+    logger.Info("使用 Logrus 日志")
+}
+```
+
+**依赖**：只会引入 `github.com/sirupsen/logrus` 和 `gopkg.in/natefinch/lumberjack.v2`
+
+### 组合使用
+
+你可以同时导入多个提供者，根据需要选择使用：
+
+```go
+import (
+    "github.com/LandcLi/LandcLogFace"
+    _ "github.com/LandcLi/LandcLogFace/providers/zap"
+    _ "github.com/LandcLi/LandcLogFace/providers/logrus"
+)
+
+func main() {
+    // 使用 Zap 日志
+    zapLogger := LandcLogFace.GetLoggerWithProvider("app", "zap")
+    zapLogger.Info("使用 Zap")
+
+    // 使用 Logrus 日志
+    logrusLogger := LandcLogFace.GetLoggerWithProvider("app", "logrus")
+    logrusLogger.Info("使用 Logrus")
+
+    // 使用默认的控制台日志
+    consoleLogger := LandcLogFace.GetLoggerWithProvider("app", "console")
+    consoleLogger.Info("使用控制台")
 }
 ```
 
@@ -119,19 +206,13 @@ func main() {
 	consoleLogger := LandcLogFace.GetLoggerWithProvider("app", "console")
 	consoleLogger.Info("使用控制台日志")
 
-	// 使用zap提供者（高性能）
-	zapLogger := LandcLogFace.GetLoggerWithProvider("app", "zap")
-	zapLogger.Info("使用zap日志")
-
-	// 使用logrus提供者（功能丰富）
-	logrusLogger := LandcLogFace.GetLoggerWithProvider("app", "logrus")
-	logrusLogger.Info("使用logrus日志")
-
 	// 使用std提供者（轻量）
 	stdLogger := LandcLogFace.GetLoggerWithProvider("app", "std")
 	stdLogger.Info("使用标准库日志")
 }
 ```
+
+**注意**：要使用 `zap` 或 `logrus` 提供者，需要先导入对应的提供者包。
 
 ### 2. 配置日志实例
 
@@ -144,6 +225,7 @@ package main
 
 import (
 	"github.com/LandcLi/LandcLogFace"
+    _ "github.com/LandcLi/LandcLogFace/providers/zap"
 )
 
 func main() {
@@ -326,6 +408,7 @@ package main
 import (
 	"github.com/LandcLi/LandcLogFace"
 	"time"
+    _ "github.com/LandcLi/LandcLogFace/providers/zap"
 )
 
 func main() {
@@ -366,6 +449,7 @@ package main
 import (
 	"github.com/LandcLi/LandcLogFace"
 	"time"
+    _ "github.com/LandcLi/LandcLogFace/providers/zap"
 )
 
 func main() {
@@ -411,6 +495,12 @@ LandcLogFace提供了常用Web框架的日志适配器，方便在框架中使�
 
 #### 6.1 Gin框架适配器
 
+**注意：使用Gin适配器前，需要先安装Gin框架依赖：**
+
+```bash
+go get github.com/gin-gonic/gin
+```
+
 使用Gin适配器可以将Gin框架的请求日志集成到统一的日志系统中：
 
 ```go
@@ -418,6 +508,8 @@ package main
 
 import (
 	"github.com/LandcLi/LandcLogFace"
+	"github.com/LandcLi/LandcLogFace/providers/zap"
+	"github.com/LandcLi/LandcLogFace/providers/gin"
 	"github.com/gin-gonic/gin"
 )
 
@@ -436,7 +528,7 @@ func main() {
 	r := gin.Default()
 
 	// 使用LandcLogFace的Gin适配器
-	LandcLogFace.UseWithGin(r, logger)
+	ginProvider.UseWithGin(r, logger)
 
 	// 定义路由
 	r.GET("/", func(c *gin.Context) {
@@ -467,6 +559,8 @@ package main
 
 import (
 	"github.com/LandcLi/LandcLogFace"
+	"github.com/LandcLi/LandcLogFace/providers/logrus"
+	"github.com/LandcLi/LandcLogFace/providers/gf"
 	"context"
 
 	"github.com/gogf/gf/v2/os/glog"
@@ -484,7 +578,7 @@ func main() {
 	logger := LandcLogFace.GetLoggerWithLogConfig(config)
 
 	// 创建GoFrame日志适配器
-	gfLogger := LandcLogFace.NewGFLogger(logger)
+	gfLogger := gf.NewGFLogger(logger)
 
 	// 设置GoFrame的全局日志器
 	glog.SetLogger(gfLogger)
@@ -548,6 +642,23 @@ func main() {
 }
 ```
 
+## 依赖对比
+
+| 使用场景 | 必需依赖 |
+|---------|----------|
+| 仅核心包 | 无 |
+| Zap | `go.uber.org/zap`, `gopkg.in/natefinch/lumberjack.v2` |
+| Logrus | `github.com/sirupsen/logrus`, `gopkg.in/natefinch/lumberjack.v2` |
+| Gin | `github.com/gin-gonic/gin` |
+| GoFrame | `github.com/gogf/gf/v2` |
+
+## 最佳实践
+
+1. **按需导入**：只导入你实际需要的日志库提供者
+2. **使用空白导入**：使用 `_` 前缀导入提供者包，自动注册提供者
+3. **核心包优先**：优先使用核心包提供的功能，减少依赖
+4. **明确依赖**：在 `go.mod` 中明确指定需要的依赖
+
 ## 项目结构
 
 ```
@@ -558,24 +669,28 @@ LandcLogFace/
 ├── README.md             # 项目文档
 ├── LICENSE               # 许可证文件
 ├── internal/             # 核心代码目录
-│   ├── logger/           # 日志核心实现
-│   │   ├── logger.go         # 核心接口定义
-│   │   ├── config.go         # 统一配置类
-│   │   ├── log_factory.go    # 日志工厂和配置管理
-│   │   ├── console_logger.go # 控制台日志适配器
-│   │   ├── zap_logger.go     # zap日志库适配器
-│   │   ├── logrus_logger.go  # logrus日志库适配器
-│   │   └── std_logger.go     # 标准库log适配器
-│   └── adapters/         # 框架适配器
-│       ├── gin_adapter.go    # gin框架适配器
-│       ├── gf_adapter.go     # goframe框架适配器
-│       └── types.go          # 共享类型定义
+│   └── logger/           # 日志核心实现
+│       ├── logger.go         # 核心接口定义
+│       ├── config.go         # 统一配置类
+│       ├── log_factory.go    # 日志工厂和配置管理
+│       ├── console_logger.go # 控制台日志适配器
+│       ├── std_logger.go     # 标准库log适配器
+│       ├── zap_logger.go     # zap日志库适配器
+│       └── logrus_logger.go  # logrus日志库适配器
+├── providers/           # 按需导入的提供者包
+│   ├── zap/             # Zap日志库提供者
+│   ├── logrus/          # Logrus日志库提供者
+│   ├── gin/             # Gin框架适配器
+│   └── gf/              # GoFrame框架适配器
 ├── examples/             # 示例代码目录
 │   └── example.go        # 使用示例
 └── tests/                # 测试目录
     ├── logger_test.go    # 测试用例
     ├── options_test.go   # 选项函数测试
-    └── custom_provider_test.go # 自定义提供者测试
+    ├── custom_provider_test.go # 自定义提供者测试
+    ├── core_only_test.go # 核心包测试
+    ├── zap_test.go      # Zap提供者测试
+    └── logrus_test.go   # Logrus提供者测试
 ```
 
 ## 依赖管理
@@ -584,10 +699,10 @@ LandcLogFace/
 
 | 依赖库 | 版本 | 用途 |
 |-------|------|------|
-| `github.com/gin-gonic/gin` | v1.9.1 | Gin框架，用于实现Gin适配器 |
-| `go.uber.org/zap` | v1.26.0 | 高性能日志库 |
-| `github.com/sirupsen/logrus` | v1.9.3 | 功能丰富的日志库 |
-| `gopkg.in/natefinch/lumberjack.v2` | v2.2.1 | 日志文件轮转库 |
+| `go.uber.org/zap` | v1.26.0 | 高性能日志库（可选） |
+| `github.com/sirupsen/logrus` | v1.9.3 | 功能丰富的日志库（可选） |
+| `github.com/gin-gonic/gin` | v1.9.1 | Gin框架，用于实现Gin适配器（可选） |
+| `gopkg.in/natefinch/lumberjack.v2` | v2.2.1 | 日志文件轮转库（可选） |
 
 **可选依赖**
 | 依赖库 | 版本 | 用途 |
@@ -599,48 +714,38 @@ LandcLogFace/
 项目包含完整的测试用例，验证了所有核心功能的正确性：
 
 ```bash
+# 测试核心包（无第三方依赖）
+go test -v -tags=core_only ./tests/core_only_test.go
+
+# 测试Zap提供者
+go test -v -tags=zap_provider ./tests/zap_test.go
+
+# 测试Logrus提供者
+go test -v -tags=logrus_provider ./tests/logrus_test.go
+
 # 运行所有测试
-cd LandcLogFace
 go test -v ./...
 ```
 
-测试覆盖以下内容：
-
-- 核心接口功能测试
-- 日志工厂测试
-- 全局日志测试
-- 各种日志适配器测试
-- 日志选项测试
-- 日志级别测试
-- 高级功能测试（字段、上下文、错误处理等）
-
-所有测试用例都已通过，确保项目的可靠性和稳定性。
-
-## 贡献指南
-
-欢迎为LandcLogFace项目贡献代码！如果你有任何改进或新功能的想法，请按照以下步骤进行：
-
-1. **Fork** 项目仓库
-2. **Clone** 到本地：`git clone https://github.com/LandcLi/LandcLogFace.git`
-3. **创建** 特性分支：`git checkout -b feature/your-feature`
-4. **实现** 你的功能或修复
-5. **编写** 测试用例
-6. **运行** 测试：`go test -v ./...`
-7. **提交** 代码：`git commit -m "Add your feature"`
-8. **推送** 到远程：`git push origin feature/your-feature`
-9. **创建** Pull Request
-
 ## 许可证
 
-本项目采用 MIT 许可证 - 详见 [LICENSE](LICENSE) 文件
+本项目采用 MIT 许可证。详情请参阅 [LICENSE](LICENSE) 文件。
+
+## 贡献
+
+欢迎贡献代码、报告问题或提出改进建议。请通过以下方式参与：
+
+1. Fork 本仓库
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 开启 Pull Request
 
 ## 联系方式
 
-如果您有任何问题或建议，请通过以下方式联系我们：
+- 项目主页：https://github.com/LandcLi/LandcLogFace
+- 问题反馈：https://github.com/LandcLi/LandcLogFace/issues
 
-- GitHub Issues：[https://github.com/LandcLi/LandcLogFace/issues](https://github.com/LandcLi/LandcLogFace/issues)
-- 邮箱：206131925@qq.com
+## 致谢
 
----
-
-**LandcLogFace** - 让Go语言日志管理更简单、更灵活、更强大！
+感谢所有为本项目做出贡献的开发者！
