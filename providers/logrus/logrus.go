@@ -1,5 +1,3 @@
-//go:build logrus_provider
-
 package logrus
 
 import (
@@ -344,4 +342,9 @@ func (p *LogrusLoggerProvider) CreateWithConfig(name string, config map[string]i
 // RegisterProvider 注册logrus日志提供者
 func RegisterProvider() {
 	logger.GetLogFactory().RegisterProvider("logrus", NewLogrusLoggerProvider())
+}
+
+// init 自动注册logrus日志提供者
+func init() {
+	RegisterProvider()
 }

@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/LandcLi/LandcLogFace"
+	_ "github.com/LandcLi/LandcLogFace/providers/zap"
+	_ "github.com/LandcLi/LandcLogFace/providers/logrus"
 )
 
 // ExampleBasicUsage 基本使用示例

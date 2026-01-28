@@ -1,5 +1,3 @@
-//go:build zap_provider
-
 package zap
 
 import (
@@ -338,4 +336,9 @@ func (p *ZapLoggerProvider) CreateWithConfig(name string, config map[string]inte
 // RegisterProvider 注册zap日志提供者
 func RegisterProvider() {
 	logger.GetLogFactory().RegisterProvider("zap", NewZapLoggerProvider())
+}
+
+// init 自动注册zap日志提供者
+func init() {
+	RegisterProvider()
 }
