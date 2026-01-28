@@ -21,10 +21,8 @@ var (
 func GetLogFactory() *LogFactory {
 	factoryOnce.Do(func() {
 		factory = NewLogFactory()
-		// 注册默认的日志提供者
+		// 注册默认的日志提供者（无第三方依赖）
 		factory.RegisterProvider("console", NewConsoleLoggerProvider())
-		factory.RegisterProvider("zap", NewZapLoggerProvider())
-		factory.RegisterProvider("logrus", NewLogrusLoggerProvider())
 		factory.RegisterProvider("std", NewStdLoggerProvider())
 		// 设置默认提供者为console
 		factory.SetDefaultProvider("console")
