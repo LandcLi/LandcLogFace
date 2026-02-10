@@ -509,7 +509,7 @@ package main
 import (
 	"github.com/LandcLi/LandcLogFace"
 	"github.com/LandcLi/LandcLogFace/providers/zap"
-	"github.com/LandcLi/LandcLogFace/providers/gin"
+	"github.com/LandcLi/LandcLogFace/adapter/gin"
 	"github.com/gin-gonic/gin"
 )
 
@@ -560,7 +560,7 @@ package main
 import (
 	"github.com/LandcLi/LandcLogFace"
 	"github.com/LandcLi/LandcLogFace/providers/logrus"
-	"github.com/LandcLi/LandcLogFace/providers/gf"
+	"github.com/LandcLi/LandcLogFace/adapter/gf"
 	"context"
 
 	"github.com/gogf/gf/v2/os/glog"
@@ -679,7 +679,8 @@ LandcLogFace/
 │       └── logrus_logger.go  # logrus日志库适配器
 ├── providers/           # 按需导入的提供者包
 │   ├── zap/             # Zap日志库提供者
-│   ├── logrus/          # Logrus日志库提供者
+│   └── logrus/          # Logrus日志库提供者
+├── adapter/             # 框架适配器目录
 │   ├── gin/             # Gin框架适配器
 │   └── gf/              # GoFrame框架适配器
 ├── examples/             # 示例代码目录

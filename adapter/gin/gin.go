@@ -49,7 +49,10 @@ func (g *GinLogger) Logger() gin.HandlerFunc {
 		clientIP := c.ClientIP()
 		traceID := c.Request.Header.Get("X-Trace-ID")
 		if traceID == "" {
-			traceID = fmt.Sprintf("%d", time.Now().UnixNano())
+			traceID = c.Request.Context().Value("trace_id").(string)
+			if traceID == "" {
+				traceID = fmt.Sprintf("%d", time.Now().UnixNano())
+			}
 		}
 
 		// 日志字段
@@ -61,18 +64,19 @@ func (g *GinLogger) Logger() gin.HandlerFunc {
 			{Key: "latency", Value: latencyTime},
 			{Key: "timestamp", Value: endTime},
 			{Key: "trace_id", Value: traceID},
+			{Key: "error", Value: c.Errors},
 		}
 
 		// 根据状态码设置日志级别
 		switch {
 		case statusCode >= 500:
-			g.log.Error(fmt.Sprintf("[GIN] %s %s %d %s %s", reqMethod, reqUri, statusCode, latencyTime, clientIP), fields...)
+			g.log.Error("", fields...)
 		case statusCode >= 400:
-			g.log.Warn(fmt.Sprintf("[GIN] %s %s %d %s %s", reqMethod, reqUri, statusCode, latencyTime, clientIP), fields...)
+			g.log.Warn("", fields...)
 		case statusCode >= 300:
-			g.log.Info(fmt.Sprintf("[GIN] %s %s %d %s %s", reqMethod, reqUri, statusCode, latencyTime, clientIP), fields...)
+			g.log.Info("", fields...)
 		default:
-			g.log.Info(fmt.Sprintf("[GIN] %s %s %d %s %s", reqMethod, reqUri, statusCode, latencyTime, clientIP), fields...)
+			g.log.Info("", fields...)
 		}
 	}
 }
@@ -83,10 +87,11 @@ func (g *GinLogger) Recovery() gin.HandlerFunc {
 		defer func() {
 			if err := recover(); err != nil {
 				// 记录错误日志
-				g.log.Error(fmt.Sprintf("[GIN] panic recovered: %v", err),
+				g.log.Error("",
 					logger.Field{Key: "method", Value: c.Request.Method},
 					logger.Field{Key: "uri", Value: c.Request.RequestURI},
 					logger.Field{Key: "ip", Value: c.ClientIP()},
+					logger.Field{Key: "error", Value: err},
 				)
 
 				// 响应500错误
