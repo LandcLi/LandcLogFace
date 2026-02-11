@@ -49,8 +49,9 @@ func (g *GinLogger) Logger() gin.HandlerFunc {
 		clientIP := c.ClientIP()
 		traceID := c.Request.Header.Get("X-Trace-ID")
 		if traceID == "" {
-			traceID = c.Request.Context().Value("trace_id").(string)
-			if traceID == "" {
+			var ok bool
+			traceID,ok = c.Request.Context().Value("trace_id").(string)
+			if !ok{
 				traceID = fmt.Sprintf("%d", time.Now().UnixNano())
 			}
 		}
