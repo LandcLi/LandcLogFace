@@ -6,15 +6,15 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/LandcLi/LandcLogFace"
-	_ "github.com/LandcLi/LandcLogFace/providers/zap"
-	_ "github.com/LandcLi/LandcLogFace/providers/logrus"
+	"github.com/LandcLi/landc-logface/lclogface"
+	_ "github.com/LandcLi/landc-logface/providers/logrus"
+	_ "github.com/LandcLi/landc-logface/providers/zap"
 )
 
 // ExampleBasicUsage 基本使用示例
 func ExampleBasicUsage() {
 	// 获取全局日志实例
-	logger := LandcLogFace.GetLogger()
+	logger := lclogface.GetLogger()
 
 	// 输出不同级别的日志
 	logger.Debug("这是一条调试日志")
@@ -28,8 +28,8 @@ func ExampleBasicUsage() {
 
 	// 使用字段
 	logger.Info("用户登录",
-		LandcLogFace.Field{Key: "user_id", Value: 123},
-		LandcLogFace.Field{Key: "ip", Value: "192.168.1.1"},
+		lclogface.Field{Key: "user_id", Value: 123},
+		lclogface.Field{Key: "ip", Value: "192.168.1.1"},
 	)
 
 	// 链式调用
@@ -43,19 +43,19 @@ func ExampleBasicUsage() {
 // ExampleWithDifferentProviders 使用不同的日志提供者
 func ExampleWithDifferentProviders() {
 	// 使用console提供者
-	consoleLogger := LandcLogFace.GetLoggerWithProvider("app", "console")
+	consoleLogger := lclogface.GetLoggerWithProvider("app", "console")
 	consoleLogger.Info("使用控制台日志")
 
 	// 使用zap提供者
-	zapLogger := LandcLogFace.GetLoggerWithProvider("app", "zap")
+	zapLogger := lclogface.GetLoggerWithProvider("app", "zap")
 	zapLogger.Info("使用zap日志")
 
 	// 使用logrus提供者
-	logrusLogger := LandcLogFace.GetLoggerWithProvider("app", "logrus")
+	logrusLogger := lclogface.GetLoggerWithProvider("app", "logrus")
 	logrusLogger.Info("使用logrus日志")
 
 	// 使用std提供者
-	stdLogger := LandcLogFace.GetLoggerWithProvider("app", "std")
+	stdLogger := lclogface.GetLoggerWithProvider("app", "std")
 	stdLogger.Info("使用标准库日志")
 
 	fmt.Println("不同提供者使用示例完成")
@@ -66,13 +66,13 @@ func ExampleWithConfiguration() {
 	// 配置map
 	config := map[string]interface{}{
 		"provider":   "zap",
-		"level":      LandcLogFace.DebugLevel,
+		"level":      lclogface.DebugLevel,
 		"format":     "json",
 		"outputPath": "stdout",
 	}
 
 	// 根据配置创建日志实例
-	logger := LandcLogFace.GetLoggerWithMap("app", config)
+	logger := lclogface.GetLoggerWithMap("app", config)
 	logger.Debug("带配置的调试日志")
 	logger.Info("带配置的信息日志")
 
@@ -82,14 +82,14 @@ func ExampleWithConfiguration() {
 // ExampleWithFileRotation 日志文件轮转示例
 func ExampleWithFileRotation() {
 	// 使用zap日志库，配置文件轮转
-	zapLogger := LandcLogFace.GetLoggerWithProvider("app", "zap")
-	zapLogger.SetLevel(LandcLogFace.InfoLevel)
+	zapLogger := lclogface.GetLoggerWithProvider("app", "zap")
+	zapLogger.SetLevel(lclogface.InfoLevel)
 
 	zapLogger.Info("使用文件轮转的zap日志")
 
 	// 使用logrus日志库，配置文件轮转
-	logrusLogger := LandcLogFace.GetLoggerWithProvider("app", "logrus")
-	logrusLogger.SetLevel(LandcLogFace.InfoLevel)
+	logrusLogger := lclogface.GetLoggerWithProvider("app", "logrus")
+	logrusLogger.SetLevel(lclogface.InfoLevel)
 
 	logrusLogger.Info("使用文件轮转的logrus日志")
 
@@ -99,8 +99,8 @@ func ExampleWithFileRotation() {
 // ExampleWithMaxMessageSize 单条日志大小限制示例
 func ExampleWithMaxMessageSize() {
 	// 配置单条日志最大大小
-	logger := LandcLogFace.GetLoggerWithProvider("app", "zap")
-	logger.SetLevel(LandcLogFace.InfoLevel)
+	logger := lclogface.GetLoggerWithProvider("app", "zap")
+	logger.SetLevel(lclogface.InfoLevel)
 
 	logger.Info("单条日志大小限制示例")
 
@@ -110,10 +110,10 @@ func ExampleWithMaxMessageSize() {
 // ExampleWithLogConfig 使用统一配置类示例
 func ExampleWithLogConfig() {
 	// 创建并配置LogConfig
-	config := LandcLogFace.NewLogConfig()
+	config := lclogface.NewLogConfig()
 	config.WithProvider("zap").
 		WithName("myapp").
-		WithLevel(LandcLogFace.DebugLevel).
+		WithLevel(lclogface.DebugLevel).
 		WithFormat("json").
 		WithOutputPath("app.log").
 		WithMaxLogSize(50).             // 单个日志文件最大50MB
@@ -124,18 +124,18 @@ func ExampleWithLogConfig() {
 		WithExtraConfig("key", "value") // 添加额外配置
 
 	// 根据LogConfig创建日志实例
-	logger := LandcLogFace.GetLoggerWithLogConfig(config)
+	logger := lclogface.GetLoggerWithLogConfig(config)
 	logger.Debug("使用LogConfig的调试日志")
 	logger.Info("使用LogConfig的信息日志")
 
 	// 另一种创建方式
-	anotherConfig := LandcLogFace.NewLogConfig()
+	anotherConfig := lclogface.NewLogConfig()
 	anotherConfig.Provider = "logrus"
 	anotherConfig.Name = "anotherapp"
-	anotherConfig.Level = LandcLogFace.InfoLevel
+	anotherConfig.Level = lclogface.InfoLevel
 	anotherConfig.OutputPath = "another.log"
 
-	anotherLogger := LandcLogFace.GetLoggerWithLogConfig(anotherConfig)
+	anotherLogger := lclogface.GetLoggerWithLogConfig(anotherConfig)
 	anotherLogger.Info("使用另一个LogConfig的日志")
 
 	fmt.Println("使用统一配置类示例完成")
@@ -143,7 +143,7 @@ func ExampleWithLogConfig() {
 
 // ExampleWithContext 使用上下文
 func ExampleWithContext() {
-	logger := LandcLogFace.GetLogger()
+	logger := lclogface.GetLogger()
 
 	// 创建上下文
 	ctx := context.Background()
@@ -158,7 +158,7 @@ func ExampleWithContext() {
 
 // ExampleWithError 使用错误
 func ExampleWithError() {
-	logger := LandcLogFace.GetLogger()
+	logger := lclogface.GetLogger()
 
 	// 创建错误
 	err := errors.New("数据库连接失败")
@@ -168,25 +168,25 @@ func ExampleWithError() {
 	errLogger.Error("操作失败")
 
 	// 直接在日志中添加错误字段
-	logger.Error("操作失败", LandcLogFace.Field{Key: "error", Value: err})
+	logger.Error("操作失败", lclogface.Field{Key: "error", Value: err})
 
 	fmt.Println("错误使用示例完成")
 }
 
 // ExampleWithFields 使用字段
 func ExampleWithFields() {
-	logger := LandcLogFace.GetLogger()
+	logger := lclogface.GetLogger()
 
 	// 创建带字段的日志实例
 	userLogger := logger.WithFields(
-		LandcLogFace.Field{Key: "service", Value: "user"},
-		LandcLogFace.Field{Key: "version", Value: "1.0.0"},
+		lclogface.Field{Key: "service", Value: "user"},
+		lclogface.Field{Key: "version", Value: "1.0.0"},
 	)
 
 	// 使用带字段的日志实例
 	userLogger.Info("用户注册",
-		LandcLogFace.Field{Key: "username", Value: "john"},
-		LandcLogFace.Field{Key: "email", Value: "john@example.com"},
+		lclogface.Field{Key: "username", Value: "john"},
+		lclogface.Field{Key: "email", Value: "john@example.com"},
 	)
 
 	// 继续添加字段
@@ -198,30 +198,30 @@ func ExampleWithFields() {
 // ExampleGlobalFunctions 全局函数使用示例
 func ExampleGlobalFunctions() {
 	// 使用全局函数输出日志
-	LandcLogFace.Debug("全局调试日志")
-	LandcLogFace.Info("全局信息日志")
-	LandcLogFace.Warn("全局警告日志")
-	LandcLogFace.Error("全局错误日志")
+	lclogface.Debug("全局调试日志")
+	lclogface.Info("全局信息日志")
+	lclogface.Warn("全局警告日志")
+	lclogface.Error("全局错误日志")
 
 	// 使用全局格式化函数
-	LandcLogFace.Infof("全局格式化日志: %s", "test")
-	LandcLogFace.Errorf("全局错误格式化日志: %d", 500)
+	lclogface.Infof("全局格式化日志: %s", "test")
+	lclogface.Errorf("全局错误格式化日志: %d", 500)
 
 	// 使用全局函数带字段
-	LandcLogFace.Info("全局带字段日志", LandcLogFace.Field{Key: "key", Value: "value"})
+	lclogface.Info("全局带字段日志", lclogface.Field{Key: "key", Value: "value"})
 
 	fmt.Println("全局函数使用示例完成")
 }
 
 // ExampleLogLevelCheck 日志级别检查示例
 func ExampleLogLevelCheck() {
-	logger := LandcLogFace.GetLogger()
+	logger := lclogface.GetLogger()
 
 	// 检查日志级别是否启用
 	if logger.IsDebugEnabled() {
 		// 执行耗时操作
 		data := "耗时操作的结果"
-		logger.Debug("调试信息", LandcLogFace.Field{Key: "data", Value: data})
+		logger.Debug("调试信息", lclogface.Field{Key: "data", Value: data})
 	}
 
 	if logger.IsInfoEnabled() {
@@ -237,14 +237,14 @@ func ExampleCustomProvider() {
 	customProvider := &CustomLoggerProvider{}
 
 	// 注册自定义提供者
-	LandcLogFace.RegisterProvider("custom", customProvider)
+	lclogface.RegisterProvider("custom", customProvider)
 
 	// 使用自定义提供者
-	customLogger := LandcLogFace.GetLoggerWithProvider("app", "custom")
+	customLogger := lclogface.GetLoggerWithProvider("app", "custom")
 	customLogger.Info("使用自定义日志提供者")
 
 	// 注销自定义提供者
-	LandcLogFace.UnregisterProvider("custom")
+	lclogface.UnregisterProvider("custom")
 
 	fmt.Println("自定义提供者示例完成")
 }
@@ -260,17 +260,17 @@ func NewCustomLogger(name string) *CustomLogger {
 }
 
 // SetLevel 设置日志级别
-func (c *CustomLogger) SetLevel(level LandcLogFace.LogLevel) {
+func (c *CustomLogger) SetLevel(level lclogface.LogLevel) {
 	// 实现自定义逻辑
 }
 
 // GetLevel 获取当前日志级别
-func (c *CustomLogger) GetLevel() LandcLogFace.LogLevel {
-	return LandcLogFace.InfoLevel
+func (c *CustomLogger) GetLevel() lclogface.LogLevel {
+	return lclogface.InfoLevel
 }
 
 // Debug 输出调试级日志
-func (c *CustomLogger) Debug(msg string, fields ...LandcLogFace.Field) {
+func (c *CustomLogger) Debug(msg string, fields ...lclogface.Field) {
 	fmt.Printf("[CUSTOM] [DEBUG] [%s] %s\n", c.name, msg)
 }
 
@@ -280,7 +280,7 @@ func (c *CustomLogger) Debugf(format string, args ...interface{}) {
 }
 
 // Info 输出信息级日志
-func (c *CustomLogger) Info(msg string, fields ...LandcLogFace.Field) {
+func (c *CustomLogger) Info(msg string, fields ...lclogface.Field) {
 	fmt.Printf("[CUSTOM] [INFO] [%s] %s\n", c.name, msg)
 }
 
@@ -290,7 +290,7 @@ func (c *CustomLogger) Infof(format string, args ...interface{}) {
 }
 
 // Warn 输出警告级日志
-func (c *CustomLogger) Warn(msg string, fields ...LandcLogFace.Field) {
+func (c *CustomLogger) Warn(msg string, fields ...lclogface.Field) {
 	fmt.Printf("[CUSTOM] [WARN] [%s] %s\n", c.name, msg)
 }
 
@@ -300,7 +300,7 @@ func (c *CustomLogger) Warnf(format string, args ...interface{}) {
 }
 
 // Error 输出错误级日志
-func (c *CustomLogger) Error(msg string, fields ...LandcLogFace.Field) {
+func (c *CustomLogger) Error(msg string, fields ...lclogface.Field) {
 	fmt.Printf("[CUSTOM] [ERROR] [%s] %s\n", c.name, msg)
 }
 
@@ -310,7 +310,7 @@ func (c *CustomLogger) Errorf(format string, args ...interface{}) {
 }
 
 // Fatal 输出致命级日志并退出程序
-func (c *CustomLogger) Fatal(msg string, fields ...LandcLogFace.Field) {
+func (c *CustomLogger) Fatal(msg string, fields ...lclogface.Field) {
 	fmt.Printf("[CUSTOM] [FATAL] [%s] %s\n", c.name, msg)
 }
 
@@ -320,7 +320,7 @@ func (c *CustomLogger) Fatalf(format string, args ...interface{}) {
 }
 
 // Panic 输出恐慌级日志并触发panic
-func (c *CustomLogger) Panic(msg string, fields ...LandcLogFace.Field) {
+func (c *CustomLogger) Panic(msg string, fields ...lclogface.Field) {
 	fmt.Printf("[CUSTOM] [PANIC] [%s] %s\n", c.name, msg)
 }
 
@@ -330,27 +330,27 @@ func (c *CustomLogger) Panicf(format string, args ...interface{}) {
 }
 
 // WithFields 添加字段到日志
-func (c *CustomLogger) WithFields(fields ...LandcLogFace.Field) LandcLogFace.Logger {
+func (c *CustomLogger) WithFields(fields ...lclogface.Field) lclogface.Logger {
 	return c
 }
 
 // WithField 添加单个字段到日志
-func (c *CustomLogger) WithField(key string, value interface{}) LandcLogFace.Logger {
+func (c *CustomLogger) WithField(key string, value interface{}) lclogface.Logger {
 	return c
 }
 
 // WithContext 添加上下文到日志
-func (c *CustomLogger) WithContext(ctx context.Context) LandcLogFace.Logger {
+func (c *CustomLogger) WithContext(ctx context.Context) lclogface.Logger {
 	return c
 }
 
 // WithError 添加错误信息到日志
-func (c *CustomLogger) WithError(err error) LandcLogFace.Logger {
+func (c *CustomLogger) WithError(err error) lclogface.Logger {
 	return c
 }
 
 // WithTime 添加时间到日志
-func (c *CustomLogger) WithTime(t time.Time) LandcLogFace.Logger {
+func (c *CustomLogger) WithTime(t time.Time) lclogface.Logger {
 	return c
 }
 
@@ -393,11 +393,11 @@ func (c *CustomLogger) Sync() error {
 type CustomLoggerProvider struct{}
 
 // Create 创建日志实例
-func (p *CustomLoggerProvider) Create(name string, opts ...LandcLogFace.Option) LandcLogFace.Logger {
+func (p *CustomLoggerProvider) Create(name string, opts ...lclogface.Option) lclogface.Logger {
 	return NewCustomLogger(name)
 }
 
 // CreateWithConfig 根据配置创建日志实例
-func (p *CustomLoggerProvider) CreateWithConfig(name string, config map[string]interface{}) LandcLogFace.Logger {
+func (p *CustomLoggerProvider) CreateWithConfig(name string, config map[string]interface{}) lclogface.Logger {
 	return NewCustomLogger(name)
 }

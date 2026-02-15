@@ -5,15 +5,15 @@ package tests
 import (
 	"testing"
 
-	"github.com/LandcLi/LandcLogFace"
-	_ "github.com/LandcLi/LandcLogFace/providers/logrus"
+	"github.com/LandcLi/landc-logface/lclogface"
+	_ "github.com/LandcLi/landc-logface/providers/logrus"
 )
 
 // TestLogrusProvider 测试Logrus提供者
 func TestLogrusProvider(t *testing.T) {
-	logger := LandcLogFace.GetLoggerWithProvider("test", "logrus",
-		LandcLogFace.WithLevel(LandcLogFace.DebugLevel),
-		LandcLogFace.WithFormat("text"),
+	logger := lclogface.GetLoggerWithProvider("test", "logrus",
+		lclogface.WithLevel(lclogface.DebugLevel),
+		lclogface.WithFormat("text"),
 	)
 	if logger == nil {
 		t.Fatal("创建Logrus日志失败")
@@ -27,11 +27,11 @@ func TestLogrusProvider(t *testing.T) {
 
 // TestLogrusWithOptions 测试Logrus带选项
 func TestLogrusWithOptions(t *testing.T) {
-	logger := LandcLogFace.GetLoggerWithProvider("test", "logrus",
-		LandcLogFace.WithLevel(LandcLogFace.InfoLevel),
-		LandcLogFace.WithFormat("json"),
-		LandcLogFace.WithOutputPath("stdout"),
-		LandcLogFace.WithMaxMessageSize(10),
+	logger := lclogface.GetLoggerWithProvider("test", "logrus",
+		lclogface.WithLevel(lclogface.InfoLevel),
+		lclogface.WithFormat("json"),
+		lclogface.WithOutputPath("stdout"),
+		lclogface.WithMaxMessageSize(10),
 	)
 	if logger == nil {
 		t.Fatal("创建Logrus日志失败")

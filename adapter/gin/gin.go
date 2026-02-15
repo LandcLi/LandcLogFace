@@ -6,7 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/LandcLi/LandcLogFace/internal/logger"
+	"github.com/LandcLi/landc-logface/internal/logger"
 )
 
 // GinLogger 是gin框架的日志适配器

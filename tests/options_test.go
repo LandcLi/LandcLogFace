@@ -3,36 +3,36 @@ package tests
 import (
 	"testing"
 
-	"github.com/LandcLi/LandcLogFace"
+	"github.com/LandcLi/landc-logface/lclogface"
 )
 
 func TestCreateLoggerWithOptions(t *testing.T) {
 	tests := []struct {
 		name     string
 		provider string
-		opts     []LandcLogFace.Option
+		opts     []lclogface.Option
 	}{
 		{
 			name:     "console with options",
 			provider: "console",
-			opts: []LandcLogFace.Option{
-				LandcLogFace.WithLevel(LandcLogFace.WarnLevel),
-				LandcLogFace.WithFormat("json"),
+			opts: []lclogface.Option{
+				lclogface.WithLevel(lclogface.WarnLevel),
+				lclogface.WithFormat("json"),
 			},
 		},
 		{
 			name:     "std with options",
 			provider: "std",
-			opts: []LandcLogFace.Option{
-				LandcLogFace.WithLevel(LandcLogFace.ErrorLevel),
-				LandcLogFace.WithFormat("text"),
+			opts: []lclogface.Option{
+				lclogface.WithLevel(lclogface.ErrorLevel),
+				lclogface.WithFormat("text"),
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			log := LandcLogFace.GetLoggerWithProvider("test", tt.provider, tt.opts...)
+			log := lclogface.GetLoggerWithProvider("test", tt.provider, tt.opts...)
 			if log == nil {
 				t.Fatalf("创建日志实例失败")
 			}
@@ -43,10 +43,10 @@ func TestCreateLoggerWithOptions(t *testing.T) {
 }
 
 func TestGetLoggerWithProviderWithOptions(t *testing.T) {
-	log := LandcLogFace.GetLoggerWithProvider("test-app", "console",
-		LandcLogFace.WithLevel(LandcLogFace.DebugLevel),
-		LandcLogFace.WithFormat("json"),
-		LandcLogFace.WithOutputPath("stdout"),
+	log := lclogface.GetLoggerWithProvider("test-app", "console",
+		lclogface.WithLevel(lclogface.DebugLevel),
+		lclogface.WithFormat("json"),
+		lclogface.WithOutputPath("stdout"),
 	)
 
 	if log == nil {

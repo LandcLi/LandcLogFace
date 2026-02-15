@@ -5,12 +5,12 @@ package tests
 import (
 	"testing"
 
-	"github.com/LandcLi/LandcLogFace"
+	"github.com/LandcLi/landc-logface/lclogface"
 )
 
 // TestCoreOnly 测试仅使用核心包（不引入任何第三方日志库）
 func TestCoreOnly(t *testing.T) {
-	logger := LandcLogFace.GetLogger()
+	logger := lclogface.GetLogger()
 	if logger == nil {
 		t.Fatal("获取全局日志失败")
 	}
@@ -20,7 +20,7 @@ func TestCoreOnly(t *testing.T) {
 
 // TestConsoleProvider 测试控制台提供者
 func TestConsoleProvider(t *testing.T) {
-	logger := LandcLogFace.GetLoggerWithProvider("test", "console")
+	logger := lclogface.GetLoggerWithProvider("test", "console")
 	if logger == nil {
 		t.Fatal("创建控制台日志失败")
 	}
@@ -30,7 +30,7 @@ func TestConsoleProvider(t *testing.T) {
 
 // TestStdProvider 测试标准库提供者
 func TestStdProvider(t *testing.T) {
-	logger := LandcLogFace.GetLoggerWithProvider("test", "std")
+	logger := lclogface.GetLoggerWithProvider("test", "std")
 	if logger == nil {
 		t.Fatal("创建标准库日志失败")
 	}

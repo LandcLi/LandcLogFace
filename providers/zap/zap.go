@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 
-	"github.com/LandcLi/LandcLogFace/internal/logger"
+	"github.com/LandcLi/landc-logface/internal/logger"
 )
 
 // ZapLogger zap日志库适配器

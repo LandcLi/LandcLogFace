@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"gopkg.in/natefinch/lumberjack.v2"
 
-	"github.com/LandcLi/LandcLogFace/internal/logger"
+	"github.com/LandcLi/landc-logface/internal/logger"
 )
 
 // LogrusLogger logrus日志库适配器

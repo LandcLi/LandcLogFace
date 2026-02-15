@@ -1,4 +1,4 @@
-module github.com/LandcLi/LandcLogFace
+module github.com/LandcLi/landc-logface
 
 go 1.24.0
 

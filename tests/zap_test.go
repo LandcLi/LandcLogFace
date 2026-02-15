@@ -5,15 +5,15 @@ package tests
 import (
 	"testing"
 
-	"github.com/LandcLi/LandcLogFace"
-	_ "github.com/LandcLi/LandcLogFace/providers/zap"
+	"github.com/LandcLi/landc-logface/lclogface"
+	_ "github.com/LandcLi/landc-logface/providers/zap"
 )
 
 // TestZapProvider 测试Zap提供者
 func TestZapProvider(t *testing.T) {
-	logger := LandcLogFace.GetLoggerWithProvider("test", "zap",
-		LandcLogFace.WithLevel(LandcLogFace.DebugLevel),
-		LandcLogFace.WithFormat("json"),
+	logger := lclogface.GetLoggerWithProvider("test", "zap",
+		lclogface.WithLevel(lclogface.DebugLevel),
+		lclogface.WithFormat("json"),
 	)
 	if logger == nil {
 		t.Fatal("创建Zap日志失败")
@@ -27,11 +27,11 @@ func TestZapProvider(t *testing.T) {
 
 // TestZapWithOptions 测试Zap带选项
 func TestZapWithOptions(t *testing.T) {
-	logger := LandcLogFace.GetLoggerWithProvider("test", "zap",
-		LandcLogFace.WithLevel(LandcLogFace.InfoLevel),
-		LandcLogFace.WithFormat("json"),
-		LandcLogFace.WithOutputPath("stdout"),
-		LandcLogFace.WithMaxMessageSize(10),
+	logger := lclogface.GetLoggerWithProvider("test", "zap",
+		lclogface.WithLevel(lclogface.InfoLevel),
+		lclogface.WithFormat("json"),
+		lclogface.WithOutputPath("stdout"),
+		lclogface.WithMaxMessageSize(10),
 	)
 	if logger == nil {
 		t.Fatal("创建Zap日志失败")

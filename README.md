@@ -37,13 +37,13 @@ LandcLogFace是一个Go语言的日志门面（Logging Facade）项目，提供�
 1. **使用go get安装**
 
 ```bash
-go get github.com/LandcLi/LandcLogFace
+go get github.com/LandcLi/landc-logface
 ```
 
 2. **或直接克隆仓库**
 
 ```bash
-git clone https://github.com/LandcLi/LandcLogFace.git
+git clone https://github.com/LandcLi/landc-logface.git
 cd LandcLogFace
 go mod tidy
 ```
@@ -55,7 +55,7 @@ go mod tidy
 ```go
 package main
 
-import "github.com/LandcLi/LandcLogFace"
+import "github.com/LandcLi/landc-logface"
 
 func main() {
 	// 获取全局日志实例
@@ -84,7 +84,7 @@ func main() {
 ```go
 package main
 
-import "github.com/LandcLi/LandcLogFace"
+import "github.com/LandcLi/landc-logface"
 
 func main() {
 	// 使用全局函数输出日志
@@ -108,7 +108,7 @@ LandcLogFace 使用 Go 的 Build Tags 特性实现依赖分离，让你可以按
 核心包不包含任何第三方日志库依赖，只提供基础的日志接口和功能：
 
 ```go
-import "github.com/LandcLi/LandcLogFace"
+import "github.com/LandcLi/landc-logface"
 ```
 
 核心包包含：
@@ -124,8 +124,8 @@ import "github.com/LandcLi/LandcLogFace"
 
 ```go
 import (
-    "github.com/LandcLi/LandcLogFace"
-    _ "github.com/LandcLi/LandcLogFace/providers/zap" // 导入并注册 Zap 提供者
+    "github.com/LandcLi/landc-logface"
+    _ "github.com/LandcLi/landc-logface/providers/zap" // 导入并注册 Zap 提供者
 )
 
 func main() {
@@ -146,8 +146,8 @@ func main() {
 
 ```go
 import (
-    "github.com/LandcLi/LandcLogFace"
-    _ "github.com/LandcLi/LandcLogFace/providers/logrus" // 导入并注册 Logrus 提供者
+    "github.com/LandcLi/landc-logface"
+    _ "github.com/LandcLi/landc-logface/providers/logrus" // 导入并注册 Logrus 提供者
 )
 
 func main() {
@@ -168,9 +168,9 @@ func main() {
 
 ```go
 import (
-    "github.com/LandcLi/LandcLogFace"
-    _ "github.com/LandcLi/LandcLogFace/providers/zap"
-    _ "github.com/LandcLi/LandcLogFace/providers/logrus"
+    "github.com/LandcLi/landc-logface"
+    _ "github.com/LandcLi/landc-logface/providers/zap"
+    _ "github.com/LandcLi/landc-logface/providers/logrus"
 )
 
 func main() {
@@ -198,7 +198,7 @@ LandcLogFace支持多种日志库，你可以根据需要选择合适的日志�
 package main
 
 import (
-	"github.com/LandcLi/LandcLogFace"
+	"github.com/LandcLi/landc-logface"
 )
 
 func main() {
@@ -224,8 +224,8 @@ func main() {
 package main
 
 import (
-	"github.com/LandcLi/LandcLogFace"
-    _ "github.com/LandcLi/LandcLogFace/providers/zap"
+	"github.com/LandcLi/landc-logface"
+    _ "github.com/LandcLi/landc-logface/providers/zap"
 )
 
 func main() {
@@ -246,7 +246,7 @@ func main() {
 package main
 
 import (
-	"github.com/LandcLi/LandcLogFace"
+	"github.com/LandcLi/landc-logface"
 )
 
 func main() {
@@ -271,7 +271,7 @@ func main() {
 package main
 
 import (
-	"github.com/LandcLi/LandcLogFace"
+	"github.com/LandcLi/landc-logface"
 )
 
 func main() {
@@ -300,7 +300,7 @@ func main() {
 package main
 
 import (
-	"github.com/LandcLi/LandcLogFace"
+	"github.com/LandcLi/landc-logface"
 	"context"
 )
 
@@ -323,7 +323,7 @@ func main() {
 package main
 
 import (
-	"github.com/LandcLi/LandcLogFace"
+	"github.com/LandcLi/landc-logface"
 	"errors"
 )
 
@@ -348,7 +348,7 @@ func main() {
 package main
 
 import (
-	"github.com/LandcLi/LandcLogFace"
+	"github.com/LandcLi/landc-logface"
 	"time"
 )
 
@@ -367,7 +367,7 @@ func main() {
 package main
 
 import (
-	"github.com/LandcLi/LandcLogFace"
+	"github.com/LandcLi/landc-logface"
 )
 
 func main() {
@@ -406,9 +406,9 @@ LandcLogFace支持详细的日志文件轮转配置，包括文件大小限制�
 package main
 
 import (
-	"github.com/LandcLi/LandcLogFace"
+	"github.com/LandcLi/landc-logface"
 	"time"
-    _ "github.com/LandcLi/LandcLogFace/providers/zap"
+    _ "github.com/LandcLi/landc-logface/providers/zap"
 )
 
 func main() {
@@ -447,9 +447,9 @@ LandcLogFace提供了`LogConfig`统一配置类，用于集中管理所有日志
 package main
 
 import (
-	"github.com/LandcLi/LandcLogFace"
+	"github.com/LandcLi/landc-logface"
 	"time"
-    _ "github.com/LandcLi/LandcLogFace/providers/zap"
+    _ "github.com/LandcLi/landc-logface/providers/zap"
 )
 
 func main() {
@@ -507,9 +507,9 @@ go get github.com/gin-gonic/gin
 package main
 
 import (
-	"github.com/LandcLi/LandcLogFace"
-	"github.com/LandcLi/LandcLogFace/providers/zap"
-	"github.com/LandcLi/LandcLogFace/adapter/gin"
+	"github.com/LandcLi/landc-logface"
+	"github.com/LandcLi/landc-logface/providers/zap"
+	"github.com/LandcLi/landc-logface/adapter/gin"
 	"github.com/gin-gonic/gin"
 )
 
@@ -558,9 +558,9 @@ go get github.com/gogf/gf/v2
 package main
 
 import (
-	"github.com/LandcLi/LandcLogFace"
-	"github.com/LandcLi/LandcLogFace/providers/logrus"
-	"github.com/LandcLi/LandcLogFace/adapter/gf"
+	"github.com/LandcLi/landc-logface"
+	"github.com/LandcLi/landc-logface/providers/logrus"
+	"github.com/LandcLi/landc-logface/adapter/gf"
 	"context"
 
 	"github.com/gogf/gf/v2/os/glog"
@@ -599,7 +599,7 @@ func main() {
 package main
 
 import (
-	"github.com/LandcLi/LandcLogFace"
+	"github.com/LandcLi/landc-logface"
 	"fmt"
 )
 
@@ -744,8 +744,8 @@ go test -v ./...
 
 ## 联系方式
 
-- 项目主页：https://github.com/LandcLi/LandcLogFace
-- 问题反馈：https://github.com/LandcLi/LandcLogFace/issues
+- 项目主页：https://github.com/LandcLi/landc-logface
+- 问题反馈：https://github.com/LandcLi/landc-logface/issues
 
 ## 致谢
 

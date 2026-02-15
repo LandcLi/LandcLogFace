@@ -6,17 +6,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/LandcLi/LandcLogFace"
+	"github.com/LandcLi/landc-logface/lclogface"
 )
 
 // TestLoggerInterface 测试Logger接口的基本功能
 func TestLoggerInterface(t *testing.T) {
 	// 测试控制台日志
-	logger := LandcLogFace.GetLoggerWithProvider("test", "console")
+	logger := lclogface.GetLoggerWithProvider("test", "console")
 
 	// 测试日志级别设置
-	logger.SetLevel(LandcLogFace.DebugLevel)
-	if logger.GetLevel() != LandcLogFace.DebugLevel {
+	logger.SetLevel(lclogface.DebugLevel)
+	if logger.GetLevel() != lclogface.DebugLevel {
 		t.Errorf("Expected level DebugLevel, got %v", logger.GetLevel())
 	}
 
@@ -34,8 +34,8 @@ func TestLoggerInterface(t *testing.T) {
 
 	// 测试字段
 	logger.Info("With fields",
-		LandcLogFace.Field{Key: "key1", Value: "value1"},
-		LandcLogFace.Field{Key: "key2", Value: 123},
+		lclogface.Field{Key: "key1", Value: "value1"},
+		lclogface.Field{Key: "key2", Value: 123},
 	)
 
 	// 测试链式调用
@@ -76,31 +76,31 @@ func TestLoggerInterface(t *testing.T) {
 // TestGlobalLogger 测试全局日志
 func TestGlobalLogger(t *testing.T) {
 	// 测试获取全局日志实例
-	globalLogger := LandcLogFace.GetLogger()
+	globalLogger := lclogface.GetLogger()
 	if globalLogger == nil {
 		t.Error("Failed to get global logger")
 	}
 
 	// 测试全局日志函数
-	LandcLogFace.Debug("Global debug")
-	LandcLogFace.Info("Global info")
-	LandcLogFace.Warn("Global warn")
-	LandcLogFace.Error("Global error")
+	lclogface.Debug("Global debug")
+	lclogface.Info("Global info")
+	lclogface.Warn("Global warn")
+	lclogface.Error("Global error")
 
 	// 测试全局格式化函数
-	LandcLogFace.Debugf("Global debug: %s", "test")
-	LandcLogFace.Infof("Global info: %s", "test")
-	LandcLogFace.Warnf("Global warn: %s", "test")
-	LandcLogFace.Errorf("Global error: %s", "test")
+	lclogface.Debugf("Global debug: %s", "test")
+	lclogface.Infof("Global info: %s", "test")
+	lclogface.Warnf("Global warn: %s", "test")
+	lclogface.Errorf("Global error: %s", "test")
 
 	// 测试全局函数带字段
-	LandcLogFace.Info("Global with fields", LandcLogFace.Field{Key: "key", Value: "value"})
+	lclogface.Info("Global with fields", lclogface.Field{Key: "key", Value: "value"})
 }
 
 // TestZapLogger 测试zap日志适配器
 func TestZapLogger(t *testing.T) {
-	logger := LandcLogFace.GetLoggerWithProvider("test-zap", "zap")
-	logger.SetLevel(LandcLogFace.DebugLevel)
+	logger := lclogface.GetLoggerWithProvider("test-zap", "zap")
+	logger.SetLevel(lclogface.DebugLevel)
 
 	if logger == nil {
 		t.Error("Failed to create zap logger")
@@ -114,7 +114,7 @@ func TestZapLogger(t *testing.T) {
 
 	// 测试字段
 	logger.Info("Zap with fields",
-		LandcLogFace.Field{Key: "zap", Value: "test"},
+		lclogface.Field{Key: "zap", Value: "test"},
 	)
 
 	// 测试Sync
@@ -125,8 +125,8 @@ func TestZapLogger(t *testing.T) {
 
 // TestLogrusLogger 测试logrus日志适配器
 func TestLogrusLogger(t *testing.T) {
-	logger := LandcLogFace.GetLoggerWithProvider("test-logrus", "logrus")
-	logger.SetLevel(LandcLogFace.DebugLevel)
+	logger := lclogface.GetLoggerWithProvider("test-logrus", "logrus")
+	logger.SetLevel(lclogface.DebugLevel)
 
 	if logger == nil {
 		t.Error("Failed to create logrus logger")
@@ -140,7 +140,7 @@ func TestLogrusLogger(t *testing.T) {
 
 	// 测试字段
 	logger.Info("Logrus with fields",
-		LandcLogFace.Field{Key: "logrus", Value: "test"},
+		lclogface.Field{Key: "logrus", Value: "test"},
 	)
 
 	// 测试Sync
@@ -151,8 +151,8 @@ func TestLogrusLogger(t *testing.T) {
 
 // TestStdLogger 测试标准库日志适配器
 func TestStdLogger(t *testing.T) {
-	logger := LandcLogFace.GetLoggerWithProvider("test-std", "std")
-	logger.SetLevel(LandcLogFace.DebugLevel)
+	logger := lclogface.GetLoggerWithProvider("test-std", "std")
+	logger.SetLevel(lclogface.DebugLevel)
 
 	if logger == nil {
 		t.Error("Failed to create std logger")
@@ -166,7 +166,7 @@ func TestStdLogger(t *testing.T) {
 
 	// 测试字段
 	logger.Info("Std with fields",
-		LandcLogFace.Field{Key: "std", Value: "test"},
+		lclogface.Field{Key: "std", Value: "test"},
 	)
 
 	// 测试Sync
@@ -177,8 +177,8 @@ func TestStdLogger(t *testing.T) {
 
 // TestConsoleLogger 测试控制台日志适配器
 func TestConsoleLogger(t *testing.T) {
-	logger := LandcLogFace.GetLoggerWithProvider("test-console", "console")
-	logger.SetLevel(LandcLogFace.DebugLevel)
+	logger := lclogface.GetLoggerWithProvider("test-console", "console")
+	logger.SetLevel(lclogface.DebugLevel)
 
 	if logger == nil {
 		t.Error("Failed to create console logger")
@@ -192,7 +192,7 @@ func TestConsoleLogger(t *testing.T) {
 
 	// 测试字段
 	logger.Info("Console with fields",
-		LandcLogFace.Field{Key: "console", Value: "test"},
+		lclogface.Field{Key: "console", Value: "test"},
 	)
 
 	// 测试Sync
@@ -204,12 +204,12 @@ func TestConsoleLogger(t *testing.T) {
 // TestLoggerOptions 测试日志选项
 func TestLoggerOptions(t *testing.T) {
 	// 测试选项函数
-	levelOpt := LandcLogFace.WithLevel(LandcLogFace.DebugLevel)
-	formatOpt := LandcLogFace.WithFormat("json")
-	outputOpt := LandcLogFace.WithOutputPath("stdout")
-	configOpt := LandcLogFace.WithConfig(map[string]interface{}{"key": "value"})
+	levelOpt := lclogface.WithLevel(lclogface.DebugLevel)
+	formatOpt := lclogface.WithFormat("json")
+	outputOpt := lclogface.WithOutputPath("stdout")
+	configOpt := lclogface.WithConfig(map[string]interface{}{"key": "value"})
 
-	options := &LandcLogFace.LoggerOptions{}
+	options := &lclogface.LoggerOptions{}
 
 	// 应用选项
 	levelOpt(options)
@@ -218,7 +218,7 @@ func TestLoggerOptions(t *testing.T) {
 	configOpt(options)
 
 	// 验证选项
-	if options.Level != LandcLogFace.DebugLevel {
+	if options.Level != lclogface.DebugLevel {
 		t.Errorf("Expected level DebugLevel, got %v", options.Level)
 	}
 
@@ -238,16 +238,16 @@ func TestLoggerOptions(t *testing.T) {
 // TestLogLevelString 测试日志级别字符串表示
 func TestLogLevelString(t *testing.T) {
 	testCases := []struct {
-		level    LandcLogFace.LogLevel
+		level    lclogface.LogLevel
 		expected string
 	}{
-		{LandcLogFace.DebugLevel, "DEBUG"},
-		{LandcLogFace.InfoLevel, "INFO"},
-		{LandcLogFace.WarnLevel, "WARN"},
-		{LandcLogFace.ErrorLevel, "ERROR"},
-		{LandcLogFace.FatalLevel, "FATAL"},
-		{LandcLogFace.PanicLevel, "PANIC"},
-		{LandcLogFace.LogLevel(999), "UNKNOWN"},
+		{lclogface.DebugLevel, "DEBUG"},
+		{lclogface.InfoLevel, "INFO"},
+		{lclogface.WarnLevel, "WARN"},
+		{lclogface.ErrorLevel, "ERROR"},
+		{lclogface.FatalLevel, "FATAL"},
+		{lclogface.PanicLevel, "PANIC"},
+		{lclogface.LogLevel(999), "UNKNOWN"},
 	}
 
 	for _, tc := range testCases {
@@ -259,7 +259,7 @@ func TestLogLevelString(t *testing.T) {
 
 // TestWithMethods 测试With系列方法
 func TestWithMethods(t *testing.T) {
-	logger := LandcLogFace.GetLoggerWithProvider("test-with", "console")
+	logger := lclogface.GetLoggerWithProvider("test-with", "console")
 
 	// 测试WithField
 	logger1 := logger.WithField("key1", "value1")
@@ -269,8 +269,8 @@ func TestWithMethods(t *testing.T) {
 
 	// 测试WithFields
 	logger2 := logger.WithFields(
-		LandcLogFace.Field{Key: "key1", Value: "value1"},
-		LandcLogFace.Field{Key: "key2", Value: "value2"},
+		lclogface.Field{Key: "key1", Value: "value1"},
+		lclogface.Field{Key: "key2", Value: "value2"},
 	)
 	if logger2 == nil {
 		t.Error("Failed to create logger with fields")
@@ -301,8 +301,8 @@ func TestWithMethods(t *testing.T) {
 // TestIsEnabledMethods 测试IsEnabled系列方法
 func TestIsEnabledMethods(t *testing.T) {
 	// 测试DebugLevel
-	debugLogger := LandcLogFace.GetLoggerWithProvider("test-debug", "console")
-	debugLogger.SetLevel(LandcLogFace.DebugLevel)
+	debugLogger := lclogface.GetLoggerWithProvider("test-debug", "console")
+	debugLogger.SetLevel(lclogface.DebugLevel)
 	if !debugLogger.IsDebugEnabled() {
 		t.Error("Debug level should be enabled")
 	}
@@ -317,8 +317,8 @@ func TestIsEnabledMethods(t *testing.T) {
 	}
 
 	// 测试InfoLevel
-	infoLogger := LandcLogFace.GetLoggerWithProvider("test-info", "console")
-	infoLogger.SetLevel(LandcLogFace.InfoLevel)
+	infoLogger := lclogface.GetLoggerWithProvider("test-info", "console")
+	infoLogger.SetLevel(lclogface.InfoLevel)
 	if infoLogger.IsDebugEnabled() {
 		t.Error("Debug level should not be enabled")
 	}
@@ -327,8 +327,8 @@ func TestIsEnabledMethods(t *testing.T) {
 	}
 
 	// 测试ErrorLevel
-	errorLogger := LandcLogFace.GetLoggerWithProvider("test-error", "console")
-	errorLogger.SetLevel(LandcLogFace.ErrorLevel)
+	errorLogger := lclogface.GetLoggerWithProvider("test-error", "console")
+	errorLogger.SetLevel(lclogface.ErrorLevel)
 	if errorLogger.IsDebugEnabled() {
 		t.Error("Debug level should not be enabled")
 	}

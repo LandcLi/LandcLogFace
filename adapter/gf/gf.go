@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/LandcLi/LandcLogFace/internal/logger"
+	"github.com/LandcLi/landc-logface/internal/logger"
 )
 
 // GFLogger 是goframe框架的日志适配器

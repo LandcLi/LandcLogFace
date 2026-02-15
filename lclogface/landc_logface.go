@@ -1,10 +1,10 @@
-// Package LandcLogFace 是一个日志门面库，提供统一的日志接口，支持多种日志库适配
-package LandcLogFace
+// Package lclogface 是一个日志门面库，提供统一的日志接口，支持多种日志库适配
+package lclogface
 
 import (
 	"time"
 
-	"github.com/LandcLi/LandcLogFace/internal/logger"
+	"github.com/LandcLi/landc-logface/internal/logger"
 )
 
 // 核心类型和函数导出
